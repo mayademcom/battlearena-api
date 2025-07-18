@@ -1,11 +1,11 @@
 # 🏟️ BattleArena API
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-org_battlearena-api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=your-org_battlearena-api)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=mayademcom_battlearena-api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=mayademcom_battlearena-api)
 
 **A competitive gaming platform backend built with Spring Boot**
 
@@ -14,13 +14,15 @@ BattleArena is a multiplayer gaming backend system where warriors can battle, bu
 ## 🎯 Project Overview
 
 ### What We're Building
+
 - **Warrior Management**: Player registration, authentication, and profiles
 - **Battle System**: Real-time competitive matches with ranking
-- **Alliance Network**: Social features for building warrior connections  
+- **Alliance Network**: Social features for building warrior connections
 - **Arena Leaderboards**: Global and friend-based rankings
 - **Battle Analytics**: Performance tracking and statistics
 
 ### Learning Objectives
+
 - **Spring Boot Development**: REST API design and implementation
 - **Database Mastery**: PostgreSQL, complex queries, views, and functions
 - **Modern Patterns**: Service layers, DTOs, and clean architecture
@@ -41,6 +43,7 @@ BattleArena is a multiplayer gaming backend system where warriors can battle, bu
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Java 17 or higher
 - Maven 3.6+
 - Docker and Docker Compose
@@ -48,12 +51,14 @@ BattleArena is a multiplayer gaming backend system where warriors can battle, bu
 - Your favorite IDE (IntelliJ IDEA recommended)
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd battlearena-api
 ```
 
 ### 2. Start the Database
+
 ```bash
 # Start PostgreSQL in Docker
 docker-compose up -d
@@ -63,6 +68,7 @@ docker-compose logs db
 ```
 
 ### 3. Run the Application
+
 ```bash
 # Using Maven
 ./mvnw spring-boot:run
@@ -72,6 +78,7 @@ docker-compose logs db
 ```
 
 ### 4. Verify Setup
+
 ```bash
 # Check application status
 curl http://localhost:8080/api/health
@@ -92,6 +99,7 @@ Our database includes these main entities:
 - **notifications**: System alerts and messages
 
 ### Advanced Database Features
+
 - **Views**: `battle_results`, `warrior_statistics`, `arena_leaderboard`
 - **Functions**: ELO rating calculations, statistics computations
 - **Triggers**: Automatic warrior stats updates
@@ -100,6 +108,7 @@ Our database includes these main entities:
 ## 🔧 Development Workflow
 
 ### Daily Routine
+
 ```bash
 # Morning sync
 git pull origin main
@@ -113,7 +122,9 @@ docker-compose down
 ```
 
 ### Database Updates
+
 When someone adds new database changes:
+
 ```bash
 # Get latest schema changes
 git pull origin main
@@ -127,6 +138,7 @@ docker-compose up -d
 ## 🔧 Development Workflow
 
 ### Daily Routine
+
 ```bash
 # Morning sync
 git pull origin main
@@ -140,7 +152,9 @@ docker-compose down
 ```
 
 ### Database Updates
+
 When someone adds new database changes:
+
 ```bash
 # Get latest schema changes
 git pull origin main
@@ -156,6 +170,7 @@ docker-compose up -d
 We use [Conventional Commits](https://www.conventionalcommits.org/) for clear and standardized commit messages.
 
 #### Commit Message Format
+
 ```
 <type>[optional scope]: <description>
 
@@ -165,6 +180,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for clear an
 ```
 
 #### Types
+
 - **feat**: A new feature for the user
 - **fix**: A bug fix
 - **docs**: Documentation only changes
@@ -174,6 +190,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for clear an
 - **chore**: Changes to build process or auxiliary tools
 
 #### Examples
+
 ```bash
 # New feature
 git commit -m "feat(auth): add JWT token validation"
@@ -192,6 +209,7 @@ git commit -m "feat(auth)!: replace basic auth with JWT"
 ```
 
 #### Scopes (Optional)
+
 - `auth`: Authentication related
 - `battle`: Battle system features
 - `alliance`: Social features
@@ -200,6 +218,7 @@ git commit -m "feat(auth)!: replace basic auth with JWT"
 - `config`: Configuration changes
 
 ### Creating New Features
+
 1. Create feature branch: `git checkout -b feat/warrior-achievements`
 2. Implement changes (database + code)
 3. Use conventional commits for all changes
@@ -247,6 +266,7 @@ battlearena-api/
 ## 🔌 API Endpoints
 
 ### Warrior Management
+
 ```
 POST   /api/warriors/register     # Create new warrior account
 POST   /api/warriors/login        # Authenticate warrior
@@ -256,6 +276,7 @@ PUT    /api/warriors/password     # Change password
 ```
 
 ### Battle System
+
 ```
 POST   /api/battles               # Start new battle
 POST   /api/battles/{id}/result   # Submit battle score
@@ -265,6 +286,7 @@ GET    /api/warriors/statistics   # Personal stats
 ```
 
 ### Social Features
+
 ```
 GET    /api/warriors/search       # Find other warriors
 POST   /api/alliances/request     # Send friend request
@@ -276,16 +298,19 @@ DELETE /api/alliances/{id}        # Remove alliance
 ## 📚 Learning Resources
 
 ### Spring Boot
+
 - [Spring Boot Official Docs](https://spring.io/projects/spring-boot)
 - [Building REST APIs with Spring Boot](https://spring.io/guides/tutorials/rest/)
 - [Spring Data JPA Reference](https://spring.io/projects/spring-data-jpa)
 
 ### Database
+
 - [PostgreSQL Tutorial](https://www.postgresql.org/docs/15/tutorial.html)
 - [Database Design Principles](https://www.postgresql.org/docs/15/ddl.html)
 - [SQL Performance Tips](https://www.postgresql.org/docs/15/performance-tips.html)
 
 ### Tools
+
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [Postman API Testing](https://learning.postman.com/docs/getting-started/introduction/)
 - [Git Workflow Guide](https://www.atlassian.com/git/tutorials/comparing-workflows)
@@ -297,15 +322,18 @@ DELETE /api/alliances/{id}        # Remove alliance
 We use SonarCloud for continuous code quality inspection. All pull requests are automatically analyzed and must pass quality gates before merging.
 
 #### Quality Gates
+
 - **Coverage**: Minimum 80% test coverage
 - **Duplications**: Less than 3% duplicated code
 - **Maintainability**: Rating A
-- **Reliability**: Rating A  
+- **Reliability**: Rating A
 - **Security**: Rating A
 - **Security Hotspots**: All reviewed
 
 #### GitHub Actions Workflow
+
 Our CI/CD pipeline automatically:
+
 - Runs unit tests on every push
 - Performs SonarCloud analysis on PRs
 - Prevents merging if quality gates fail
@@ -313,16 +341,18 @@ Our CI/CD pipeline automatically:
 - Updates quality badges
 
 #### Local SonarCloud Analysis (Optional)
+
 ```bash
 # Run analysis locally (requires SONAR_TOKEN)
 ./mvnw clean verify sonar:sonar \
-  -Dsonar.projectKey=your-org_battlearena-api \
+  -Dsonar.projectKey=mayademcom_battlearena-api \
   -Dsonar.organization=your-org \
   -Dsonar.host.url=https://sonarcloud.io \
   -Dsonar.login=$SONAR_TOKEN
 ```
 
 #### Quality Guidelines
+
 - Write meaningful unit tests for service layers
 - Keep methods under 20 lines when possible
 - Avoid code duplication - use helper methods
@@ -331,13 +361,15 @@ Our CI/CD pipeline automatically:
 - Add JavaDoc comments for public APIs
 
 #### SonarCloud Dashboard
-View detailed quality reports: [SonarCloud Project Dashboard](https://sonarcloud.io/project/overview?id=your-org_battlearena-api)
+
+View detailed quality reports: [SonarCloud Project Dashboard](https://sonarcloud.io/project/overview?id=mayademcom_battlearena-api)
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
 **Database Connection Failed**
+
 ```bash
 # Check if database is running
 docker-compose ps
@@ -350,6 +382,7 @@ docker-compose logs db
 ```
 
 **Application Won't Start**
+
 ```bash
 # Check Java version
 java -version
@@ -362,6 +395,7 @@ java -version
 ```
 
 **Port Already in Use**
+
 ```bash
 # Check what's using port 8080
 lsof -i :8080
@@ -377,6 +411,7 @@ server.port=8081
 ## 🤝 Contributing
 
 ### Code Review Guidelines
+
 - All code must be reviewed by at least one team member
 - All PRs must pass SonarCloud quality gates
 - GitHub Actions must pass (tests + quality checks)
@@ -385,6 +420,7 @@ server.port=8081
 - Include database migrations if schema changes
 
 ### Coding Standards
+
 - Follow SonarCloud quality guidelines (see Code Quality section)
 - Use meaningful variable and method names
 - Add comments for complex business logic
@@ -393,6 +429,7 @@ server.port=8081
 - Write unit tests for service layer methods
 
 ### Pull Request Process
+
 ```bash
 # Feature development with conventional commits
 git checkout -b feat/alliance-system
@@ -403,13 +440,14 @@ git push origin feat/alliance-system
 
 # Create Pull Request in GitHub
 # ✅ GitHub Actions (CI) must pass
-# ✅ SonarCloud quality gates must pass  
+# ✅ SonarCloud quality gates must pass
 # ✅ Code review approval required
 # ✅ All tests must pass
 # After approval, merge to main
 ```
 
 ### Git Workflow Best Practices
+
 - Use descriptive branch names: `feat/warrior-stats`, `fix/login-bug`
 - Keep commits small and focused
 - Write clear commit messages using conventional format
@@ -431,6 +469,6 @@ Ready to build the ultimate battle arena? Let's create something amazing togethe
 
 **Project Team**: Backend Engineering Interns  
 **Duration**: 8 weeks  
-**Goal**: Build production-ready gaming platform backend  
+**Goal**: Build production-ready gaming platform backend
 
-*May the best warrior win! ⚔️*
+_May the best warrior win! ⚔️_
