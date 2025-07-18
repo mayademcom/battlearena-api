@@ -1,8 +1,8 @@
 # SonarCloud Project Configuration
 
 # Project identification
-sonar.projectKey=your-org_battlearena-api
-sonar.organization=your-org
+sonar.projectKey=mayademcom_battlearena-api
+sonar.organization=mayademcom
 
 # Project metadata
 sonar.projectName=BattleArena API
