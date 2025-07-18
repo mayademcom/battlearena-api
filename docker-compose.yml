@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: battlearena-db
+    environment:
+      POSTGRES_DB: battlearena
+      POSTGRES_USER: mayadem
+      POSTGRES_PASSWORD: mayadem123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/db_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mayadem -d battlearena"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

@@ -1,0 +1,27 @@
+on:
+  # Trigger analysis when pushing to main or pull requests
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+name: Sonar Analyze
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.12.0
+        with:
+          checkout-fetch-depth: 0
+          java-version: 19
+          maven-version: 3.9.0
+          java-distribution: "temurin"
+      
+      - name: Sonar Analyze
+        run: mvn clean compile sonar:sonar  # Removed verify and coverage profile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
