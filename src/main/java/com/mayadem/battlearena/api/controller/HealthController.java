@@ -4,16 +4,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mayadem.battlearena.api.dto.HealthStatusDto;
+import com.mayadem.battlearena.api.service.HealthService;
+
 @RestController
-@RequestMapping("/api") // Bu sınıftaki tüm endpoint'lerin başına /api gelecek.
+@RequestMapping("/api") 
 public class HealthController {
 
-    /**
-     * API'nin ayakta ve çalışır durumda olup olmadığını kontrol eden endpoint.
-     * @return API'nin çalıştığını belirten basit bir mesaj.
-     */
-    @GetMapping("/health") // http://localhost:8080/api/health adresine gelen GET isteklerini karşılar.
-    public String healthCheck() {
-        return "API is up and running!";
+    private final HealthService healthService;
+
+    
+    public HealthController(HealthService healthService) {
+        this.healthService = healthService;
+    }
+
+    @GetMapping("/health")
+    public HealthStatusDto healthCheck() {
+        
+        return healthService.getHealthStatus();
     }
 }
