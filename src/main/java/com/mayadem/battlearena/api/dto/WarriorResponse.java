@@ -1,9 +1,10 @@
 package com.mayadem.battlearena.api.dto;
 
-import com.mayadem.battlearena.api.entity.Warrior;
 import java.sql.Timestamp;
 
-// Bu DTO, şifre gibi hassas bilgileri içermez.
+import com.mayadem.battlearena.api.entity.Warrior;
+
+
 public class WarriorResponse {
 
     private Long id;
@@ -20,9 +21,9 @@ public class WarriorResponse {
 
     /**
   
-     * için kullanılır. Bu, çok yaygın ve temiz bir yöntemdir.
-     * @param warrior Veritabanından gelen Warrior nesnesi.
-     * @return Dış dünyaya gösterilmeye hazır, güvenli DTO.
+      
+      @param warrior 
+     * @return
      */
     public static WarriorResponse fromEntity(Warrior warrior) {
         WarriorResponse response = new WarriorResponse();

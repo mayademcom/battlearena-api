@@ -1,16 +1,30 @@
 package com.mayadem.battlearena.api.entity;
 
-import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "warriors")
-public class Warrior {
+public class Warrior implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+ 
     @Column(name = "username", unique = true, nullable = false, length = 50)
     private String username;
 
@@ -50,6 +64,7 @@ public class Warrior {
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean isActive;
 
+
     @PrePersist
     protected void onCreate() {
         createdAt = new Timestamp(System.currentTimeMillis());
@@ -61,117 +76,68 @@ public class Warrior {
         updatedAt = new Timestamp(System.currentTimeMillis());
     }
 
-    public Long getId() {
-        return id;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+    
+        return Collections.emptyList();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Override
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public String getUsername() {
+        return this.username; 
     }
 
-    public String getDisplayName() {
-        return displayName;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; 
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; 
     }
 
-    public int getTotalBattles() {
-        return totalBattles;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; 
     }
 
-    public void setTotalBattles(int totalBattles) {
-        this.totalBattles = totalBattles;
-    }
-
-    public int getVictories() {
-        return victories;
-    }
-
-    public void setVictories(int victories) {
-        this.victories = victories;
-    }
-
-    public int getDefeats() {
-        return defeats;
-    }
-
-    public void setDefeats(int defeats) {
-        this.defeats = defeats;
-    }
-
-    public int getBestScore() {
-        return bestScore;
-    }
-
-    public void setBestScore(int bestScore) {
-        this.bestScore = bestScore;
-    }
-
-    public int getRankPoints() {
-        return rankPoints;
-    }
-
-    public void setRankPoints(int rankPoints) {
-        this.rankPoints = rankPoints;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Timestamp getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Timestamp lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    public boolean isIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
+    @Override
+    public boolean isEnabled() {
+        return this.isActive; 
     }
 
    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public void setUsername(String username) { this.username = username; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public int getTotalBattles() { return totalBattles; }
+    public void setTotalBattles(int totalBattles) { this.totalBattles = totalBattles; }
+    public int getVictories() { return victories; }
+    public void setVictories(int victories) { this.victories = victories; }
+    public int getDefeats() { return defeats; }
+    public void setDefeats(int defeats) { this.defeats = defeats; }
+    public int getBestScore() { return bestScore; }
+    public void setBestScore(int bestScore) { this.bestScore = bestScore; }
+    public int getRankPoints() { return rankPoints; }
+    public void setRankPoints(int rankPoints) { this.rankPoints = rankPoints; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public Timestamp getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+    public Timestamp getLastLogin() { return lastLogin; }
+    public void setLastLogin(Timestamp lastLogin) { this.lastLogin = lastLogin; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 }
