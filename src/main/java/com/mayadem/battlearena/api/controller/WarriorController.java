@@ -11,34 +11,30 @@ import com.mayadem.battlearena.api.dto.AuthResponse;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
-import com.mayadem.battlearena.api.service.AuthService;
 import com.mayadem.battlearena.api.service.WarriorService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/warriors") 
+@RequestMapping("/api/warriors")
 public class WarriorController {
 
-    private final WarriorService warriorService;
-    private final AuthService authService; 
-
     
-    public WarriorController(WarriorService warriorService, AuthService authService) {
+    private final WarriorService warriorService;
+
+    public WarriorController(WarriorService warriorService) {
         this.warriorService = warriorService;
-        this.authService = authService;
     }
 
-    
     @PostMapping("/register")
     public ResponseEntity<WarriorRegistrationResponse> registerWarrior(@Valid @RequestBody WarriorRegistrationRequest request) {
         WarriorRegistrationResponse response = warriorService.registerWarrior(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+       
+        return ResponseEntity.ok(warriorService.login(request));
     }
 }
