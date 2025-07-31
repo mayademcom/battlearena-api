@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import com.mayadem.battlearena.api.entity.Warrior;
 
 
-public class WarriorResponse {
+public class WarriorRegistrationResponse {
 
     private Long id;
     private String username;
@@ -25,8 +25,10 @@ public class WarriorResponse {
       @param warrior 
      * @return
      */
-    public static WarriorResponse fromEntity(Warrior warrior) {
-        WarriorResponse response = new WarriorResponse();
+    
+
+    public static WarriorRegistrationResponse fromEntity(Warrior warrior) {
+        WarriorRegistrationResponse response = new WarriorRegistrationResponse(); 
         response.id = warrior.getId();
         response.username = warrior.getUsername();
         response.email = warrior.getEmail();

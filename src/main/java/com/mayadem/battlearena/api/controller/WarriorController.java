@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mayadem.battlearena.api.dto.AuthResponse;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
-import com.mayadem.battlearena.api.dto.WarriorResponse;
+import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.service.AuthService;
 import com.mayadem.battlearena.api.service.WarriorService;
 
@@ -31,8 +31,8 @@ public class WarriorController {
 
     
     @PostMapping("/register")
-    public ResponseEntity<WarriorResponse> registerWarrior(@Valid @RequestBody WarriorRegistrationRequest request) {
-        WarriorResponse response = warriorService.registerWarrior(request);
+    public ResponseEntity<WarriorRegistrationResponse> registerWarrior(@Valid @RequestBody WarriorRegistrationRequest request) {
+        WarriorRegistrationResponse response = warriorService.registerWarrior(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

@@ -4,7 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
-import com.mayadem.battlearena.api.dto.WarriorResponse;
+import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
@@ -20,7 +20,7 @@ public class WarriorService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public WarriorResponse registerWarrior(WarriorRegistrationRequest request) {
+    public WarriorRegistrationResponse registerWarrior(WarriorRegistrationRequest request) {
         if (warriorRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new DuplicateResourceException("Username '" + request.getUsername() + "' is already taken.");
         }
@@ -39,6 +39,6 @@ public class WarriorService {
         newWarrior.setDisplayName(request.getUsername());
         Warrior savedWarrior = warriorRepository.save(newWarrior);
 
-        return WarriorResponse.fromEntity(savedWarrior);
+        return WarriorRegistrationResponse.fromEntity(savedWarrior);
     }
 }
