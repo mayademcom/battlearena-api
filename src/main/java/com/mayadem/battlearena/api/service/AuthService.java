@@ -27,11 +27,14 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+      
+        String identifier = request.getLoginIdentifier();
+
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(identifier, request.getPassword())
         );
 
-        UserDetails userDetails = warriorRepository.findByUsername(request.getUsername())
+        UserDetails userDetails = warriorRepository.findByUsernameOrEmail(identifier, identifier)
                 .orElseThrow(() -> new IllegalStateException("User not found after successful authentication"));
 
         String jwtToken = jwtService.generateToken(userDetails);
