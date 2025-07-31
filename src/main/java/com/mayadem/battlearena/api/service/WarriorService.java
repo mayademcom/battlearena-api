@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -54,16 +55,25 @@ public class WarriorService implements UserDetailsService{
     }
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getLoginIdentifier(), request.getPassword())
-        );
+        try {
+        
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getLoginIdentifier(), request.getPassword())
+            );
 
-        UserDetails userDetails = warriorRepository.findByUsernameOrEmail(request.getLoginIdentifier(), request.getLoginIdentifier())
-                .orElseThrow(() -> new IllegalStateException("User not found after successful authentication"));
+            UserDetails userDetails = warriorRepository.findByUsernameOrEmail(request.getLoginIdentifier(), request.getLoginIdentifier())
+                    .orElseThrow(() -> new IllegalStateException("User not found after successful authentication"));
 
-        String jwtToken = jwtService.generateToken(userDetails);
-        log.info("Login successful for user: {}", userDetails.getUsername());
-        return new AuthResponse(jwtToken);
+            String jwtToken = jwtService.generateToken(userDetails);
+            log.info("Login successful for user: {}", userDetails.getUsername());
+            return new AuthResponse(jwtToken);
+
+        } catch (AuthenticationException e) {
+          
+            log.warn("Failed login attempt for identifier: {}", request.getLoginIdentifier());
+     
+            throw e;
+        }
     }
 
      @Override

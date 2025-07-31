@@ -1,7 +1,12 @@
 package com.mayadem.battlearena.api.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequest {
+    @NotBlank(message = "Login identifier cannot be empty.")
     private String loginIdentifier; 
+
+    @NotBlank(message = "Password cannot be empty.")
     private String password;
 
     
