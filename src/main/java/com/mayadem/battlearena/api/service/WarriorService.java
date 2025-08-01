@@ -2,6 +2,7 @@ package com.mayadem.battlearena.api.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -30,7 +31,7 @@ public class WarriorService implements UserDetailsService{
     private final JwtService jwtService;
 
     public WarriorService(WarriorRepository warriorRepository, PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager, JwtService jwtService) {
+                          @Lazy AuthenticationManager authenticationManager, JwtService jwtService) {
         this.warriorRepository = warriorRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
