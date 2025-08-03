@@ -1,9 +1,9 @@
 package com.mayadem.battlearena.api.dto;
 
-public class AuthResponse {
+public class LoginResponse {
     private String accessToken;
 
-    public AuthResponse(String accessToken) {
+    public LoginResponse(String accessToken) {
         this.accessToken = accessToken;
     }
 

@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mayadem.battlearena.api.dto.AuthResponse;
 import com.mayadem.battlearena.api.dto.LoginRequest;
+import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.service.WarriorService;
+import org.springframework.http.ResponseEntity;
 
 import jakarta.validation.Valid;
 
@@ -33,7 +34,7 @@ public class WarriorController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
        
         return ResponseEntity.ok(warriorService.login(request));
     }

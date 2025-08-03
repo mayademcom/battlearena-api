@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.mayadem.battlearena.api.dto.AuthResponse; 
 import com.mayadem.battlearena.api.dto.LoginRequest;
+import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -55,7 +55,7 @@ public class WarriorService implements UserDetailsService{
         return WarriorRegistrationResponse.fromEntity(savedWarrior);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         try {
         
             authenticationManager.authenticate(
@@ -67,7 +67,7 @@ public class WarriorService implements UserDetailsService{
 
             String jwtToken = jwtService.generateToken(userDetails);
             log.info("Login successful for user: {}", userDetails.getUsername());
-            return new AuthResponse(jwtToken);
+            return new LoginResponse(jwtToken);
 
         } catch (AuthenticationException e) {
           
