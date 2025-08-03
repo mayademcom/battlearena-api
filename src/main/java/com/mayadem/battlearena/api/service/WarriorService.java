@@ -2,13 +2,8 @@ package com.mayadem.battlearena.api.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,24 +16,21 @@ import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
-public class WarriorService implements UserDetailsService{
+public class WarriorService {
 
     private static final Logger log = LoggerFactory.getLogger(WarriorService.class);
 
     private final WarriorRepository warriorRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public WarriorService(WarriorRepository warriorRepository, PasswordEncoder passwordEncoder,
-                          @Lazy AuthenticationManager authenticationManager, JwtService jwtService) {
+    
+    public WarriorService(WarriorRepository warriorRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.warriorRepository = warriorRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
     }
 
-   
     public WarriorRegistrationResponse registerWarrior(WarriorRegistrationRequest request) {
         if (warriorRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new DuplicateResourceException("Username '" + request.getUsername() + "' is already taken.");
@@ -51,35 +43,34 @@ public class WarriorService implements UserDetailsService{
         newWarrior.setEmail(request.getEmail());
         newWarrior.setPassword(passwordEncoder.encode(request.getPassword()));
         newWarrior.setDisplayName(request.getUsername());
+        newWarrior.setActive(true);
         Warrior savedWarrior = warriorRepository.save(newWarrior);
         return WarriorRegistrationResponse.fromEntity(savedWarrior);
     }
 
+    
     public LoginResponse login(LoginRequest request) {
-        try {
-        
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getLoginIdentifier(), request.getPassword())
-            );
+        String identifier = request.getLoginIdentifier();
+        log.debug("Login attempt for identifier: {}", identifier);
 
-            UserDetails userDetails = warriorRepository.findByUsernameOrEmail(request.getLoginIdentifier(), request.getLoginIdentifier())
-                    .orElseThrow(() -> new IllegalStateException("User not found after successful authentication"));
+        Warrior warrior = warriorRepository.findByUsernameOrEmail(identifier, identifier)
+                .orElseThrow(() -> {
+                    log.warn("Failed login attempt: User not found with identifier '{}'", identifier);
+                    return new BadCredentialsException("Invalid credentials.");
+                });
 
-            String jwtToken = jwtService.generateToken(userDetails);
-            log.info("Login successful for user: {}", userDetails.getUsername());
-            return new LoginResponse(jwtToken);
-
-        } catch (AuthenticationException e) {
-          
-            log.warn("Failed login attempt for identifier: {}", request.getLoginIdentifier());
-     
-            throw e;
+        if (!passwordEncoder.matches(request.getPassword(), warrior.getPassword())) {
+            log.warn("Failed login attempt: Invalid password for user '{}'", identifier);
+            throw new BadCredentialsException("Invalid credentials.");
         }
-    }
 
-     @Override
-    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail));
+        if (!warrior.isEnabled()) {
+            log.warn("Failed login attempt: User account is disabled for user '{}'", identifier);
+            throw new DisabledException("User account is disabled.");
+        }
+
+        String jwtToken = jwtService.generateToken(warrior);
+        log.info("Login successful for user: {}", warrior.getUsername());
+        return new LoginResponse(jwtToken);
     }
 }

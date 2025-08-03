@@ -12,7 +12,6 @@ import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.service.WarriorService;
-import org.springframework.http.ResponseEntity;
 
 import jakarta.validation.Valid;
 
@@ -20,7 +19,6 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/warriors")
 public class WarriorController {
 
-    
     private final WarriorService warriorService;
 
     public WarriorController(WarriorService warriorService) {
@@ -35,7 +33,6 @@ public class WarriorController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-       
         return ResponseEntity.ok(warriorService.login(request));
     }
 }
