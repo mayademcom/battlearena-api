@@ -4,8 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
@@ -16,7 +19,7 @@ import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
-public class WarriorService {
+public class WarriorService implements UserDetailsService{
 
     private static final Logger log = LoggerFactory.getLogger(WarriorService.class);
 
@@ -73,4 +76,15 @@ public class WarriorService {
         log.info("Login successful for user: {}", warrior.getUsername());
         return new LoginResponse(jwtToken);
     }
-}
+    @Override
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        log.debug("Attempting to load user by identifier: {}", usernameOrEmail);
+        return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> {
+                    log.warn("User not found with identifier: {}", usernameOrEmail);
+                    return new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail);
+                });
+    
+
+    
+            }}
