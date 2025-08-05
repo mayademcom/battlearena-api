@@ -77,7 +77,7 @@ public class WarriorService {
         return new LoginResponse(jwtToken);
     }
     
-    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+    public Warrior loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         log.debug("Attempting to load user by identifier: {}", usernameOrEmail);
         return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> {
