@@ -1,6 +1,7 @@
 package com.mayadem.battlearena.api.security; 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        final List<String> PUBLIC_URLS = List.of(
+        "/api/warriors/register",
+        "/api/warriors/login",
+        "/api/health"
+    );
+
+    String path = request.getRequestURI();
+
+    
+    boolean isPublicUrl = false; 
+
+
+    for (String publicUrl : PUBLIC_URLS) {
+    
+       if (path.equals(publicUrl)) {
+          isPublicUrl = true; 
+           break; 
+        }
+       }
+
+
+       if (isPublicUrl) {
+          filterChain.doFilter(request, response);
+           return;
+       }
+
+        
 
         
         final String authHeader = request.getHeader("Authorization");
