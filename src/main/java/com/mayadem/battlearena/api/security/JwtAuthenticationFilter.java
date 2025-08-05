@@ -34,13 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-
-     
-
-        
-
-        
-        final String authHeader = request.getHeader("Authorization");
+          final String authHeader = request.getHeader("Authorization");
 
         
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -48,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        
         final String jwt = authHeader.substring(7);
         final String username = jwtService.extractUsername(jwt);
 
@@ -62,17 +55,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         warrior,
-                        null, 
+                        null,
                         warrior.getAuthorities()
                 );
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
-                
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                
+                response.setStatus(403);
+                
+                response.setContentType("application/json");
+                
+                response.setCharacterEncoding("UTF-8");
+
+                
+                String errorMessage = "{\"status\": 403, \"error\": \"Forbidden\", \"message\": \"The provided token is invalid or has expired.\"}";
+                response.getWriter().write(errorMessage);
+                
+                
+                return;
             }
         }
+        
         
         filterChain.doFilter(request, response);
     }
 }
+     
