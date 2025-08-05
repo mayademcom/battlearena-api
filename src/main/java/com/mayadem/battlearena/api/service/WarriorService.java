@@ -92,11 +92,19 @@ public class WarriorService {
             }
 
             public WarriorProfileDto getWarriorProfile(String identifier) {
-             Warrior warrior = warriorRepository.findByUsernameOrEmail(identifier, identifier)
-            .orElseThrow(() -> new ResourceNotFoundException("Warrior not found with identifier: " + identifier));
-
     
-                   return null; 
+                  java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+
+                  if (warriorOptional.isPresent()) {
+        
+                          Warrior warrior = warriorOptional.get();
+        
+                         WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
+    
+                            return profileDto;
+                 } else {
+                          throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
+    }
 }
         
         
