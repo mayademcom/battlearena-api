@@ -19,7 +19,7 @@ import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
-public class WarriorService implements UserDetailsService{
+public class WarriorService {
 
     private static final Logger log = LoggerFactory.getLogger(WarriorService.class);
 
@@ -76,7 +76,7 @@ public class WarriorService implements UserDetailsService{
         log.info("Login successful for user: {}", warrior.getUsername());
         return new LoginResponse(jwtToken);
     }
-    @Override
+    
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         log.debug("Attempting to load user by identifier: {}", usernameOrEmail);
         return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
