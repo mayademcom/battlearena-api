@@ -12,10 +12,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
@@ -87,4 +89,15 @@ public class WarriorService {
     
 
     
-            }}
+            }
+
+            public WarriorProfileDto getWarriorProfile(String identifier) {
+             Warrior warrior = warriorRepository.findByUsernameOrEmail(identifier, identifier)
+            .orElseThrow(() -> new ResourceNotFoundException("Warrior not found with identifier: " + identifier));
+
+    
+                   return null; 
+}
+        
+        
+        }
