@@ -96,12 +96,16 @@ public class WarriorService {
                   java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
 
                   if (warriorOptional.isPresent()) {
-        
-                          Warrior warrior = warriorOptional.get();
-        
+                         Warrior warrior = warriorOptional.get();
                          WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
-    
-                            return profileDto;
+                         if (warrior.getTotalBattles() > 0) {
+                                   double winRate = ((double) warrior.getVictories() / warrior.getTotalBattles()) * 100.0;
+                                   double roundedWinRate = Math.round(winRate * 100.0) / 100.0;
+                                   profileDto.setWinRate(roundedWinRate);
+                            } else {
+                                 profileDto.setWinRate(0.0);
+                                }
+                           return profileDto;
                  } else {
                           throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
     }

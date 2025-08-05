@@ -43,6 +43,9 @@ public class WarriorProfileDto {
     public Integer getRankPoints() { return rankPoints; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setWinRate(Double winRate){
+        this.winRate = winRate;
+    }
 
 
     /**
