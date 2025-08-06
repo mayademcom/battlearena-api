@@ -6,6 +6,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
@@ -73,4 +74,15 @@ public class WarriorService {
         log.info("Login successful for user: {}", warrior.getUsername());
         return new LoginResponse(jwtToken);
     }
-}
+    
+    public Warrior loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        log.debug("Attempting to load user by identifier: {}", usernameOrEmail);
+        return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> {
+                    log.warn("User not found with identifier: {}", usernameOrEmail);
+                    return new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail);
+                });
+    
+
+    
+            }}
