@@ -1,5 +1,7 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -8,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
@@ -15,6 +19,8 @@ import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
+import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
+import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
 
 @Service
 public class WarriorService {
@@ -85,4 +91,27 @@ public class WarriorService {
     
 
     
-            }}
+            }
+        
+    public ChangePasswordResponseDto changePassword(ChangePasswordRequestDto dto) {
+    Warrior warrior = warriorRepository.findById(dto.getWarriorId())
+        .orElseThrow(() -> new RuntimeException("Warrior not found"));
+
+    // Mevcut şifre kontrolü
+    if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
+        throw new InvalidCurrentPasswordException("Current password is incorrect");
+    }
+
+    // Şifre onayı kontrolü
+    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+        throw new PasswordConfirmationException("New password and confirmation do not match");
+    }
+
+    // Yeni şifreyi hashle ve kaydet
+    warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+    warriorRepository.save(warrior);
+
+    return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
+
+}
+}
