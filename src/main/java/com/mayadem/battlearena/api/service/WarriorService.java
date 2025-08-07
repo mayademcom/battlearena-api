@@ -1,5 +1,7 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
@@ -90,7 +93,7 @@ public class WarriorService {
     
             }
         
-    public void changePassword(ChangePasswordRequestDto dto) {
+    public ChangePasswordResponseDto changePassword(ChangePasswordRequestDto dto) {
     Warrior warrior = warriorRepository.findById(dto.getWarriorId())
         .orElseThrow(() -> new RuntimeException("Warrior not found"));
 
@@ -107,5 +110,8 @@ public class WarriorService {
     // Yeni şifreyi hashle ve kaydet
     warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
     warriorRepository.save(warrior);
+
+    return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
+
 }
 }

@@ -20,6 +20,7 @@ public class ChangePasswordRequestDto {
     @NotBlank(message = "Confirm password cannot be empty")
     private String confirmPassword;
 
+    private Long warriorId;
     // Getters and setters
 
     public String getCurrentPassword() {
@@ -45,5 +46,13 @@ public class ChangePasswordRequestDto {
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
     }
+
+    public Long getWarriorId() {
+        return warriorId;
+    }
+
+    public void setWarriorId(Long warriorId) {
+        this.warriorId = warriorId;
+   }
     
 }
