@@ -112,7 +112,7 @@ public class WarriorService {
             Warrior warriorToUpdate = warriorOptional.get();
             warriorToUpdate.setDisplayName(requestDto.displayName());
             Warrior savedWarrior = warriorRepository.save(warriorToUpdate);
-            return null;
+            return WarriorProfileDto.fromEntity(savedWarrior);
         } else {
 
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
