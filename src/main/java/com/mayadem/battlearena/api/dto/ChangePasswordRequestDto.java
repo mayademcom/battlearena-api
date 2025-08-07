@@ -1,6 +1,7 @@
 package com.mayadem.battlearena.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class ChangePasswordRequestDto {
@@ -10,6 +11,10 @@ public class ChangePasswordRequestDto {
 
     @NotBlank(message = "New password cannot be empty")
     @Size(min = 8, message = "New password must be at least 8 characters")
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$",
+        message = "Password must include uppercase, lowercase, number and special character"
+    )
     private String newPassword;
 
     @NotBlank(message = "Confirm password cannot be empty")
