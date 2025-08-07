@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
@@ -35,4 +37,18 @@ public class WarriorController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(warriorService.login(request));
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ChangePasswordResponseDto> changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
+    
+        if (!requestDto.getNewPassword().equals(requestDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
+    }
+
+    // Şifre değiştirme işlemini servise delegasyonu
+    ChangePasswordResponseDto response = warriorService.changePassword(requestDto);
+
+         return ResponseEntity.ok(response);
+   }
+
 }
