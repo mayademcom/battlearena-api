@@ -16,6 +16,8 @@ import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
+import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
+import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
 
 @Service
 public class WarriorService {
