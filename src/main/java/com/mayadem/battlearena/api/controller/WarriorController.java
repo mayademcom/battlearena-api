@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +31,8 @@ public class WarriorController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<WarriorRegistrationResponse> registerWarrior(@Valid @RequestBody WarriorRegistrationRequest request) {
+    public ResponseEntity<WarriorRegistrationResponse> registerWarrior(
+            @Valid @RequestBody WarriorRegistrationRequest request) {
         WarriorRegistrationResponse response = warriorService.registerWarrior(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -39,12 +41,18 @@ public class WarriorController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(warriorService.login(request));
     }
-    
+
     @GetMapping("/profile")
     public ResponseEntity<WarriorProfileDto> getAuthenticatedWarriorProfile(Authentication authentication) {
-             Warrior authenticatedWarrior = (Warrior) authentication.getPrincipal();
-             String username = authenticatedWarrior.getUsername();
-             WarriorProfileDto profileDto = warriorService.getWarriorProfile(username);
-            return new ResponseEntity<>(profileDto, HttpStatus.OK);
-}
+        Warrior authenticatedWarrior = (Warrior) authentication.getPrincipal();
+        String username = authenticatedWarrior.getUsername();
+        WarriorProfileDto profileDto = warriorService.getWarriorProfile(username);
+        return new ResponseEntity<>(profileDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<WarriorProfileDto> updateAuthenticatedWarriorProfile() {
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
