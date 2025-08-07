@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
 import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
@@ -51,7 +52,7 @@ public class WarriorController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<WarriorProfileDto> updateAuthenticatedWarriorProfile() {
+    public ResponseEntity<WarriorProfileDto> updateAuthenticatedWarriorProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto) {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
