@@ -57,6 +57,7 @@ public class WarriorController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Warrior authenticatedWarrior = (Warrior) authentication.getPrincipal();
         String username = authenticatedWarrior.getUsername();
-        return new ResponseEntity<>(HttpStatus.OK);
+        WarriorProfileDto updatedProfile = warriorService.updateWarriorProfile(username, requestDto);
+        return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
     }
 }
