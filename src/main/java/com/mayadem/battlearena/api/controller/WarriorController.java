@@ -1,5 +1,7 @@
 package com.mayadem.battlearena.api.controller;
 
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,9 +52,11 @@ public class WarriorController {
     // ID’yi elle kullanıcıdan alma – backend'de set et
     requestDto.setWarriorId(authenticatedWarrior.getId());
 
-    ChangePasswordResponseDto response = warriorService.changePassword(requestDto);
+    warriorService.changePassword(requestDto);
 
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(
+        new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now())
+    );
 }
 
 }
