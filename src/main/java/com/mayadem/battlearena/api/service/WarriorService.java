@@ -7,6 +7,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
@@ -101,7 +102,7 @@ public class WarriorService {
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
         }
     }
-
+    @Transactional
     public WarriorProfileDto updateWarriorProfile(String identifier, UpdateProfileRequestDto requestDto) {
 
         java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
@@ -109,7 +110,8 @@ public class WarriorService {
         if (warriorOptional.isPresent()) {
 
             Warrior warriorToUpdate = warriorOptional.get();
-
+            warriorToUpdate.setDisplayName(requestDto.displayName());
+            Warrior savedWarrior = warriorRepository.save(warriorToUpdate);
             return null;
         } else {
 
