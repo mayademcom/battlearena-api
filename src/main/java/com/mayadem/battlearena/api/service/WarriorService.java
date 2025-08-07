@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
@@ -85,4 +86,24 @@ public class WarriorService {
     
 
     
-            }}
+            }
+        
+    public void changePassword(ChangePasswordRequestDto dto) {
+    Warrior warrior = warriorRepository.findById(dto.getWarriorId())
+        .orElseThrow(() -> new RuntimeException("Warrior not found"));
+
+    // Mevcut şifre kontrolü
+    if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
+        throw new InvalidCurrentPasswordException("Current password is incorrect");
+    }
+
+    // Şifre onayı kontrolü
+    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+        throw new PasswordConfirmationException("New password and confirmation do not match");
+    }
+
+    // Yeni şifreyi hashle ve kaydet
+    warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+    warriorRepository.save(warrior);
+}
+}
