@@ -98,13 +98,7 @@ public class WarriorService {
                   if (warriorOptional.isPresent()) {
                          Warrior warrior = warriorOptional.get();
                          WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
-                         if (warrior.getTotalBattles() > 0) {
-                                   double winRate = ((double) warrior.getVictories() / warrior.getTotalBattles()) * 100.0;
-                                   double roundedWinRate = Math.round(winRate * 100.0) / 100.0;
-                                   profileDto.setWinRate(roundedWinRate);
-                            } else {
-                                 profileDto.setWinRate(0.0);
-                                }
+                         profileDto.setWinRate(warrior);
                            return profileDto;
                  } else {
                           throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
