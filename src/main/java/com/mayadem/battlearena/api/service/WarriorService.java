@@ -2,6 +2,7 @@ package com.mayadem.battlearena.api.service;
 
 import java.time.LocalDateTime;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,6 +20,7 @@ import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
+import com.mayadem.battlearena.api.security.PasswordValidator;
 import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
 import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
 
@@ -105,6 +107,12 @@ public class WarriorService {
     // Şifre onayı kontrolü
     if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
         throw new PasswordConfirmationException("New password and confirmation do not match");
+    }
+    
+    // Şifre karmaşıklık kontrolü
+    List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
+    if (!validationErrors.isEmpty()) {
+        throw new InvalidCurrentPasswordException(String.join(", ", validationErrors));
     }
 
     // Yeni şifreyi hashle ve kaydet
