@@ -43,6 +43,14 @@ public class WarriorProfileDto {
     public Integer getRankPoints() { return rankPoints; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setWinRate(Warrior warrior) {
+    if (warrior.getTotalBattles() > 0) {
+        double winRateValue = ((double) warrior.getVictories() / warrior.getTotalBattles()) * 100.0;
+        this.winRate = Math.round(winRateValue * 100.0) / 100.0;
+    } else {
+        this.winRate = 0.0;
+    }
+}
 
 
     /**

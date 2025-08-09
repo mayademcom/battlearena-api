@@ -4,16 +4,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
@@ -85,4 +87,23 @@ public class WarriorService {
     
 
     
-            }}
+            }
+
+            public WarriorProfileDto getWarriorProfile(String identifier) {
+                       if (identifier == null || identifier.isBlank()) {
+                         throw new IllegalArgumentException("Identifier cannot be null or blank.");
+             }
+                  java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+
+                  if (warriorOptional.isPresent()) {
+                         Warrior warrior = warriorOptional.get();
+                         WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
+                         profileDto.setWinRate(warrior);
+                           return profileDto;
+                 } else {
+                          throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
+    }
+}
+        
+        
+        }
