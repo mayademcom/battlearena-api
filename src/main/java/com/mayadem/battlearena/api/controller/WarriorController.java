@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +19,8 @@ import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -34,7 +39,8 @@ public class WarriorController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<WarriorRegistrationResponse> registerWarrior(@Valid @RequestBody WarriorRegistrationRequest request) {
+    public ResponseEntity<WarriorRegistrationResponse> registerWarrior(
+            @Valid @RequestBody WarriorRegistrationRequest request) {
         WarriorRegistrationResponse response = warriorService.registerWarrior(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
