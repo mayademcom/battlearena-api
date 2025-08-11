@@ -10,20 +10,15 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
-import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
-import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
-import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
-import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 import com.mayadem.battlearena.api.security.PasswordValidator;
 import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
@@ -97,8 +92,6 @@ public class WarriorService {
     }
 
     
-            }
-        
     public ChangePasswordResponseDto changePassword(ChangePasswordRequestDto dto) {
     Warrior warrior = warriorRepository.findById(dto.getWarriorId())
         .orElseThrow(() -> new RuntimeException("Warrior not found"));
