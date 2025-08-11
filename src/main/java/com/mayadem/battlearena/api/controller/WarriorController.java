@@ -63,17 +63,4 @@ public class WarriorController {
         return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
     }
 
-    @PostMapping("/change-password")
-    public ResponseEntity<ChangePasswordResponseDto> changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
-    
-        if (!requestDto.getNewPassword().equals(requestDto.getConfirmPassword())) {
-            throw new IllegalArgumentException("New password and confirm password do not match");
-    }
-
-    // Şifre değiştirme işlemini servise delegasyonu
-    ChangePasswordResponseDto response = warriorService.changePassword(requestDto);
-
-         return ResponseEntity.ok(response);
-   }
-
 }
