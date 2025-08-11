@@ -16,6 +16,7 @@ import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
@@ -102,17 +103,25 @@ public class WarriorService {
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
         }
     }
+
     @Transactional
     public WarriorProfileDto updateWarriorProfile(String identifier, UpdateProfileRequestDto requestDto) {
 
         java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
 
         if (warriorOptional.isPresent()) {
-
             Warrior warriorToUpdate = warriorOptional.get();
-            warriorToUpdate.setDisplayName(requestDto.displayName());
+            String newDisplayName = requestDto.displayName();
+            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository.findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
+
+            if (existingWarriorWithSameDisplayName.isPresent()) {
+                throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
+            }
+
+            warriorToUpdate.setDisplayName(newDisplayName);
             Warrior savedWarrior = warriorRepository.save(warriorToUpdate);
             return WarriorProfileDto.fromEntity(savedWarrior);
+
         } else {
 
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
