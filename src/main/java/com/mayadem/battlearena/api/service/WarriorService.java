@@ -6,18 +6,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
 import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
@@ -31,7 +36,6 @@ public class WarriorService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    
     public WarriorService(WarriorRepository warriorRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.warriorRepository = warriorRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,7 +59,6 @@ public class WarriorService {
         return WarriorRegistrationResponse.fromEntity(savedWarrior);
     }
 
-    
     public LoginResponse login(LoginRequest request) {
         String identifier = request.getLoginIdentifier();
         log.debug("Login attempt for identifier: {}", identifier);
@@ -80,7 +83,7 @@ public class WarriorService {
         log.info("Login successful for user: {}", warrior.getUsername());
         return new LoginResponse(jwtToken);
     }
-    
+
     public Warrior loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         log.debug("Attempting to load user by identifier: {}", usernameOrEmail);
         return warriorRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
@@ -88,11 +91,9 @@ public class WarriorService {
                     log.warn("User not found with identifier: {}", usernameOrEmail);
                     return new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail);
                 });
-    
 
-    
-            }
-        
+    }
+
     public ChangePasswordResponseDto changePassword(ChangePasswordRequestDto dto) {
     Warrior warrior = warriorRepository.findById(dto.getWarriorId())
         .orElseThrow(() -> new RuntimeException("Warrior not found"));
@@ -114,4 +115,5 @@ public class WarriorService {
     return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
 
 }
-}
+
+            }

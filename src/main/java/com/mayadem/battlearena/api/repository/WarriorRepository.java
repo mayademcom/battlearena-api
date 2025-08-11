@@ -17,4 +17,6 @@ public interface WarriorRepository extends JpaRepository<Warrior, Long> {
     Optional<Warrior> findByEmail(String email);
 
     Optional<Warrior> findByUsernameOrEmail(String username, String email);
+
+    Optional<Warrior> findByDisplayNameAndIdNot(String displayName, Long id);
 }
