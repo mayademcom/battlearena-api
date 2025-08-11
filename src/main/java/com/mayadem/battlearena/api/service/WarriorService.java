@@ -152,6 +152,8 @@ public void changePassword(ChangePasswordRequestDto dto) {
     warriorRepository.save(warrior);
 }
 
+}
+
 
 
     
