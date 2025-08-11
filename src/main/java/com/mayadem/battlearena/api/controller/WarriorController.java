@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
@@ -60,4 +59,5 @@ public class WarriorController {
         WarriorProfileDto updatedProfile = warriorService.updateWarriorProfile(username, requestDto);
         return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
     }
+
 }
