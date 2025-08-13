@@ -1,21 +1,24 @@
 package com.mayadem.battlearena.api.controller;
 
-import java.time.LocalDateTime;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -45,19 +48,34 @@ public class WarriorController {
         return ResponseEntity.ok(warriorService.login(request));
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<WarriorProfileDto> getAuthenticatedWarriorProfile(Authentication authentication) {
+        Warrior authenticatedWarrior = (Warrior) authentication.getPrincipal();
+        String username = authenticatedWarrior.getUsername();
+        WarriorProfileDto profileDto = warriorService.getWarriorProfile(username);
+        return new ResponseEntity<>(profileDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<WarriorProfileDto> updateAuthenticatedWarriorProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Warrior authenticatedWarrior = (Warrior) authentication.getPrincipal();
+        String username = authenticatedWarrior.getUsername();
+        WarriorProfileDto updatedProfile = warriorService.updateWarriorProfile(username, requestDto);
+        return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
+    }
     @PutMapping("/change-password")
-    public ResponseEntity<ChangePasswordResponseDto> changePassword(
-    @Valid @RequestBody ChangePasswordRequestDto requestDto,
-    @AuthenticationPrincipal Warrior authenticatedWarrior) {
+public ResponseEntity<ChangePasswordResponseDto> changePassword(
+        @Valid @RequestBody ChangePasswordRequestDto requestDto,
+        @AuthenticationPrincipal Warrior authenticatedWarrior) {
 
-    // ID’yi elle kullanıcıdan alma – backend'de set et
-    requestDto.setWarriorId(authenticatedWarrior.getId());
-
-    warriorService.changePassword(requestDto);
-
-    return ResponseEntity.ok(
-        new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now())
+    ChangePasswordResponseDto response = warriorService.changePassword(
+        authenticatedWarrior.getId(),  // Burada ID'yi alıyoruz
+        requestDto
     );
+
+    return ResponseEntity.ok(response);
 }
+
 
 }
