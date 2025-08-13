@@ -1,5 +1,8 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
@@ -132,24 +136,29 @@ public class WarriorService {
     }
 
 
-public void changePassword(ChangePasswordRequestDto dto) {
-    Warrior warrior = warriorRepository.findById(dto.getWarriorId())
+public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRequestDto dto) {
+    Warrior warrior = warriorRepository.findById(warriorId)
         .orElseThrow(() -> new RuntimeException("Warrior not found"));
 
-    // Mevcut şifre kontrolü
     if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
         throw new InvalidCurrentPasswordException("Current password is incorrect");
     }
 
-    // Şifre onayı kontrolü
     if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
         throw new PasswordConfirmationException("New password and confirmation do not match");
     }
 
-    // Yeni şifreyi hashle ve kaydet
+    List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
+    if (!validationErrors.isEmpty()) {
+        throw new InvalidCurrentPasswordException(String.join(", ", validationErrors));
+    }
+
     warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
     warriorRepository.save(warrior);
+
+    return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
 }
+
 
 }
 
