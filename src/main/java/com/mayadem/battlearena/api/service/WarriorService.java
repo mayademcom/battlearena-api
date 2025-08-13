@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,6 +11,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
@@ -23,13 +23,12 @@ import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
-import com.mayadem.battlearena.api.repository.WarriorRepository;
-import com.mayadem.battlearena.api.security.PasswordValidator;
 import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
 import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
+import com.mayadem.battlearena.api.security.PasswordValidator;
 
 @Service
 public class WarriorService {
@@ -95,13 +94,10 @@ public class WarriorService {
                     log.warn("User not found with identifier: {}", usernameOrEmail);
                     return new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail);
                 });
+    }
 
-<<<<<<<<< Temporary merge branch 1
-    
-            }
-        
-    public ChangePasswordResponseDto changePassword(ChangePasswordRequestDto dto) {
-    Warrior warrior = warriorRepository.findById(dto.getWarriorId())
+    public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRequestDto dto) {
+    Warrior warrior = warriorRepository.findById(warriorId)
         .orElseThrow(() -> new RuntimeException("Warrior not found"));
 
     if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
@@ -110,12 +106,6 @@ public class WarriorService {
 
     if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
         throw new PasswordConfirmationException("New password and confirmation do not match");
-    }
-    
-    // Şifre karmaşıklık kontrolü
-    List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
-    if (!validationErrors.isEmpty()) {
-        throw new InvalidCurrentPasswordException(String.join(", ", validationErrors));
     }
 
     List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
@@ -127,16 +117,14 @@ public class WarriorService {
     warriorRepository.save(warrior);
 
     return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
-
 }
-=========
-    }
+
 
     public WarriorProfileDto getWarriorProfile(String identifier) {
         if (identifier == null || identifier.isBlank()) {
             throw new IllegalArgumentException("Identifier cannot be null or blank.");
         }
-        java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+        Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
 
         if (warriorOptional.isPresent()) {
             Warrior warrior = warriorOptional.get();
@@ -150,13 +138,12 @@ public class WarriorService {
 
     @Transactional
     public WarriorProfileDto updateWarriorProfile(String identifier, UpdateProfileRequestDto requestDto) {
-
-        java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+        Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
 
         if (warriorOptional.isPresent()) {
             Warrior warriorToUpdate = warriorOptional.get();
             String newDisplayName = requestDto.displayName();
-            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository.findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
+            Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository.findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
 
             if (existingWarriorWithSameDisplayName.isPresent()) {
                 throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
@@ -167,10 +154,7 @@ public class WarriorService {
             return WarriorProfileDto.fromEntity(savedWarrior);
 
         } else {
-
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
         }
     }
-
->>>>>>>>> Temporary merge branch 2
 }
