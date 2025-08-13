@@ -1,8 +1,6 @@
 package com.mayadem.battlearena.api.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -146,11 +144,6 @@ public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRe
 
     if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
         throw new PasswordConfirmationException("New password and confirmation do not match");
-    }
-
-    List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
-    if (!validationErrors.isEmpty()) {
-        throw new InvalidCurrentPasswordException(String.join(", ", validationErrors));
     }
 
     warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
