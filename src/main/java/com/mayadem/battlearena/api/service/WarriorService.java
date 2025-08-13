@@ -1,7 +1,6 @@
 package com.mayadem.battlearena.api.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -105,11 +104,6 @@ public class WarriorService {
 
     if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
         throw new PasswordConfirmationException("New password and confirmation do not match");
-    }
-
-    List<String> validationErrors = PasswordValidator.validate(dto.getNewPassword(), dto.getCurrentPassword());
-    if (!validationErrors.isEmpty()) {
-        throw new InvalidCurrentPasswordException(String.join(", ", validationErrors));
     }
 
     warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
