@@ -2,7 +2,6 @@ package com.mayadem.battlearena.api.dto;
 
 import java.time.LocalDateTime;
 
-
 public class ChangePasswordResponseDto {
 
     private String message;
@@ -22,5 +21,5 @@ public class ChangePasswordResponseDto {
     public LocalDateTime getChangedAt() {
         return changedAt;
     }
-    
+
 }

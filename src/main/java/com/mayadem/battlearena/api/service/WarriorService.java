@@ -1,5 +1,7 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -9,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
@@ -18,6 +22,8 @@ import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
 import com.mayadem.battlearena.api.exception.DuplicateResourceException;
+import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
+import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
@@ -112,7 +118,8 @@ public class WarriorService {
         if (warriorOptional.isPresent()) {
             Warrior warriorToUpdate = warriorOptional.get();
             String newDisplayName = requestDto.displayName();
-            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository.findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
+            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository
+                    .findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
 
             if (existingWarriorWithSameDisplayName.isPresent()) {
                 throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
@@ -126,6 +133,24 @@ public class WarriorService {
 
             throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
         }
+    }
+
+    public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRequestDto dto) {
+        Warrior warrior = warriorRepository.findById(warriorId)
+                .orElseThrow(() -> new RuntimeException("Warrior not found"));
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
+            throw new InvalidCurrentPasswordException("Current password is incorrect");
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new PasswordConfirmationException("New password and confirmation do not match");
+        }
+
+        warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        warriorRepository.save(warrior);
+
+        return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
     }
 
 }
