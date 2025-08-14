@@ -16,16 +16,16 @@ import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
+import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
-import com.mayadem.battlearena.api.dto.WarriorProfileDto;
-import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
-import com.mayadem.battlearena.api.exception.DuplicateResourceException;
-import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
-import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
-import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.exception.DisplayNameNotUniqueException;
+import com.mayadem.battlearena.api.exception.DuplicateResourceException;
+import com.mayadem.battlearena.api.exception.InvalidCurrentPasswordException;
+import com.mayadem.battlearena.api.exception.PasswordConfirmationException;
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
@@ -95,22 +95,22 @@ public class WarriorService {
     }
 
     public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRequestDto dto) {
-    Warrior warrior = warriorRepository.findById(warriorId)
-        .orElseThrow(() -> new RuntimeException("Warrior not found"));
+        Warrior warrior = warriorRepository.findById(warriorId)
+                .orElseThrow(() -> new RuntimeException("Warrior not found"));
 
-    if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
-        throw new InvalidCurrentPasswordException("Current password is incorrect");
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), warrior.getPassword())) {
+            throw new InvalidCurrentPasswordException("Current password is incorrect");
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new PasswordConfirmationException("New password and confirmation do not match");
+        }
+
+        warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        warriorRepository.save(warrior);
+
+        return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
     }
-
-    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-        throw new PasswordConfirmationException("New password and confirmation do not match");
-    }
-
-    warrior.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-    warriorRepository.save(warrior);
-
-    return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
-}
 
     public WarriorProfileDto getWarriorProfile(String identifier) {
         if (identifier == null || identifier.isBlank()) {
@@ -135,7 +135,8 @@ public class WarriorService {
         if (warriorOptional.isPresent()) {
             Warrior warriorToUpdate = warriorOptional.get();
             String newDisplayName = requestDto.displayName();
-            Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository.findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
+            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository
+                    .findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
 
             if (existingWarriorWithSameDisplayName.isPresent()) {
                 throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
