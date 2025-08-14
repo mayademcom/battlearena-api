@@ -11,17 +11,11 @@ public class ChangePasswordRequestDto {
 
     @NotBlank(message = "New password cannot be empty")
     @Size(min = 8, message = "New password must be at least 8 characters")
-    @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$",
-        message = "Password must include uppercase, lowercase, number and special character"
-    )
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$", message = "Password must include uppercase, lowercase, number and special character")
     private String newPassword;
 
     @NotBlank(message = "Confirm password cannot be empty")
     private String confirmPassword;
-
-    
-    // Getters and setters
 
     public String getCurrentPassword() {
         return currentPassword;
@@ -46,5 +40,5 @@ public class ChangePasswordRequestDto {
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
     }
-    
+
 }
