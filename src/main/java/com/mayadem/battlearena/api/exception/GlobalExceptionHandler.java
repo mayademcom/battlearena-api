@@ -34,4 +34,14 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
+    @ExceptionHandler(InvalidCurrentPasswordException.class)
+    public ResponseEntity<String> handleInvalidCurrentPassword(InvalidCurrentPasswordException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(PasswordConfirmationException.class)
+    public ResponseEntity<String> handlePasswordConfirmation(PasswordConfirmationException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
 }

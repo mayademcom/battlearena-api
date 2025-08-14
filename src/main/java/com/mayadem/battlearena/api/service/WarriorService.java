@@ -1,6 +1,7 @@
 package com.mayadem.battlearena.api.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,48 +92,6 @@ public class WarriorService {
                     log.warn("User not found with identifier: {}", usernameOrEmail);
                     return new UsernameNotFoundException("User not found with identifier: " + usernameOrEmail);
                 });
-
-    }
-
-    public WarriorProfileDto getWarriorProfile(String identifier) {
-        if (identifier == null || identifier.isBlank()) {
-            throw new IllegalArgumentException("Identifier cannot be null or blank.");
-        }
-        java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
-
-        if (warriorOptional.isPresent()) {
-            Warrior warrior = warriorOptional.get();
-            WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
-            profileDto.setWinRate(warrior);
-            return profileDto;
-        } else {
-            throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
-        }
-    }
-
-    @Transactional
-    public WarriorProfileDto updateWarriorProfile(String identifier, UpdateProfileRequestDto requestDto) {
-
-        java.util.Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
-
-        if (warriorOptional.isPresent()) {
-            Warrior warriorToUpdate = warriorOptional.get();
-            String newDisplayName = requestDto.displayName();
-            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository
-                    .findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
-
-            if (existingWarriorWithSameDisplayName.isPresent()) {
-                throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
-            }
-
-            warriorToUpdate.setDisplayName(newDisplayName);
-            Warrior savedWarrior = warriorRepository.save(warriorToUpdate);
-            return WarriorProfileDto.fromEntity(savedWarrior);
-
-        } else {
-
-            throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
-        }
     }
 
     public ChangePasswordResponseDto changePassword(Long warriorId, ChangePasswordRequestDto dto) {
@@ -153,4 +112,42 @@ public class WarriorService {
         return new ChangePasswordResponseDto("Password changed successfully", LocalDateTime.now());
     }
 
+    public WarriorProfileDto getWarriorProfile(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            throw new IllegalArgumentException("Identifier cannot be null or blank.");
+        }
+        Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+
+        if (warriorOptional.isPresent()) {
+            Warrior warrior = warriorOptional.get();
+            WarriorProfileDto profileDto = WarriorProfileDto.fromEntity(warrior);
+            profileDto.setWinRate(warrior);
+            return profileDto;
+        } else {
+            throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
+        }
+    }
+
+    @Transactional
+    public WarriorProfileDto updateWarriorProfile(String identifier, UpdateProfileRequestDto requestDto) {
+        Optional<Warrior> warriorOptional = warriorRepository.findByUsernameOrEmail(identifier, identifier);
+
+        if (warriorOptional.isPresent()) {
+            Warrior warriorToUpdate = warriorOptional.get();
+            String newDisplayName = requestDto.displayName();
+            java.util.Optional<Warrior> existingWarriorWithSameDisplayName = warriorRepository
+                    .findByDisplayNameAndIdNot(newDisplayName, warriorToUpdate.getId());
+
+            if (existingWarriorWithSameDisplayName.isPresent()) {
+                throw new DisplayNameNotUniqueException("Display name '" + newDisplayName + "' is already taken.");
+            }
+
+            warriorToUpdate.setDisplayName(newDisplayName);
+            Warrior savedWarrior = warriorRepository.save(warriorToUpdate);
+            return WarriorProfileDto.fromEntity(savedWarrior);
+
+        } else {
+            throw new ResourceNotFoundException("Warrior not found with identifier: " + identifier);
+        }
+    }
 }
