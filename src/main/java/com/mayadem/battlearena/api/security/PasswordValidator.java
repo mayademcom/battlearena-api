@@ -5,59 +5,50 @@ import java.util.List;
 
 public class PasswordValidator {
 
-    public static List<String> validate(String newPassword, String currentPassword) {
-    List<String> errors = new ArrayList<>();
+    // Regex explanation:
+    // ^ → start of string
+    // (?=.*[A-Z].*[A-Z]) → at least 2 uppercase letters
+    // (?=.*[a-z].*[a-z].*[a-z]) → at least 3 lowercase letters
+    // (?=.*[0-9].*[0-9]) → at least 2 digits
+    // (?=.*[!@#$&*]) → at least 1 special char from !@#$&*
+    // .{8,} → at least 8 characters in total
+    // $ → end of string
+    private static final String PASSWORD_PATTERN = "^(?=(?:.*[A-Z]){2,})(?=(?:.*[a-z]){3,})(?=(?:.*\\d){2,})(?=.*[!@#$&*]).{8,}$";
 
-    // Check if password is null or empty
-    if (newPassword == null || newPassword.isEmpty()) {
-        errors.add("Password cannot be empty.");
+    private PasswordValidator() {
+        // Private constructor to prevent instantiation
+    }
+
+    public static List<String> validate(String newPassword, String currentPassword) {
+        List<String> errors = new ArrayList<>();
+
+        if (newPassword == null || newPassword.isEmpty()) {
+            errors.add("Password cannot be empty.");
+            return errors;
+        }
+
+        if (newPassword.equals(currentPassword)) {
+            errors.add("New password cannot be the same as the current password.");
+        }
+
+        if (!newPassword.matches(PASSWORD_PATTERN)) {
+            if (newPassword.length() < 8) {
+                errors.add("Password must be at least 8 characters long.");
+            }
+            if (newPassword.replaceAll("[^A-Z]", "").length() < 2) {
+                errors.add("Password must contain at least 2 uppercase letters.");
+            }
+            if (newPassword.replaceAll("[^a-z]", "").length() < 3) {
+                errors.add("Password must contain at least 3 lowercase letters.");
+            }
+            if (newPassword.replaceAll("[^0-9]", "").length() < 2) {
+                errors.add("Password must contain at least 2 digits.");
+            }
+            if (!newPassword.matches(".*[!@#$&*].*")) {
+                errors.add("Password must contain at least one special character (!@#$&*).");
+            }
+        }
+
         return errors;
     }
-
-    // Check if new password is the same as current password
-    if (newPassword.equals(currentPassword)) {
-        errors.add("New password cannot be the same as the current password.");
-    }
-
-    // Minimum length check
-    if (newPassword.length() < 8) {
-        errors.add("Password must be at least 8 characters long.");
-    }
-
-    // Flags to track different password requirements
-    boolean hasUpper = false;   // At least one uppercase letter
-    boolean hasLower = false;   // At least one lowercase letter
-    boolean hasDigit = false;   // At least one digit
-    boolean hasSpecial = false; // At least one special character
-
-    // Loop through each character once and update flags
-    for (char ch : newPassword.toCharArray()) {
-        if (Character.isUpperCase(ch)) {
-            hasUpper = true;
-        } else if (Character.isLowerCase(ch)) {
-            hasLower = true;
-        } else if (Character.isDigit(ch)) {
-            hasDigit = true;
-        } else {
-            hasSpecial = true; // Any non-alphanumeric character
-        }
-    }
-
-    // Add error messages for missing requirements
-    if (!hasUpper) {
-        errors.add("Password must contain at least one uppercase letter.");
-    }
-    if (!hasLower) {
-        errors.add("Password must contain at least one lowercase letter.");
-    }
-    if (!hasDigit) {
-        errors.add("Password must contain at least one digit.");
-    }
-    if (!hasSpecial) {
-        errors.add("Password must contain at least one special character.");
-    }
-
-    return errors;
-}
-
 }
