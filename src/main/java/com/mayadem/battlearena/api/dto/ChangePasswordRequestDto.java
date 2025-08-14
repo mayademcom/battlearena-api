@@ -17,7 +17,6 @@ public class ChangePasswordRequestDto {
     @NotBlank(message = "Confirm password cannot be empty")
     private String confirmPassword;
 
-
     public String getCurrentPassword() {
         return currentPassword;
     }

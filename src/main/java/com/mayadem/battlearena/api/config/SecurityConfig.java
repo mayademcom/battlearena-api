@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/warriors/register", "/api/warriors/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/warriors/change-password").authenticated()
-           
+
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -50,11 +50,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
-    
-
-    
-
-   
 }
