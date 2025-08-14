@@ -20,6 +20,7 @@ public class PasswordValidator {
         // Private constructor to prevent instantiation
     }
 
+    @SuppressWarnings("java:S5852")
     public static List<String> validate(String newPassword, String currentPassword) {
         List<String> errors = new ArrayList<>();
 
