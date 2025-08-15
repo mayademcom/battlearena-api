@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/battles")
@@ -45,6 +47,14 @@ public class BattleController {
         BattleRoomDto updatedRoom = battleRoomService.joinBattleRoom(roomCode, joiningWarrior);
 
         return new ResponseEntity<>(updatedRoom, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BattleRoomDto>> getAvailableBattles() {
+
+        List<BattleRoomDto> availableRooms = battleRoomService.getAvailableBattleRooms();
+
+        return new ResponseEntity<>(availableRooms, HttpStatus.OK);
     }
 
 }
