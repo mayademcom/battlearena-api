@@ -5,7 +5,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
@@ -66,5 +66,18 @@ public class BattleRoomService {
         } while (battleRoomRepository.findByRoomCode(roomCode).isPresent());
 
         return roomCode;
+    }
+
+    @Transactional
+    public BattleRoomDto joinBattleRoom(String roomCode, Warrior joiningWarrior) {
+        java.util.Optional<BattleRoom> roomOptional = battleRoomRepository.findByRoomCode(roomCode);
+        if (roomOptional.isPresent()) {
+            BattleRoom battleRoom = roomOptional.get();
+            return null;
+
+        } else {
+
+            throw new ResourceNotFoundException("Battle room not found with code: " + roomCode);
+        }
     }
 }
