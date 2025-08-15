@@ -10,7 +10,6 @@ import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
-import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;

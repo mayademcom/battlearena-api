@@ -6,7 +6,6 @@ import com.mayadem.battlearena.api.entity.enums.BattleType;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BattleRoomDto {
 
