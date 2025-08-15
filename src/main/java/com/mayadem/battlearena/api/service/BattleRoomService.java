@@ -38,7 +38,8 @@ public class BattleRoomService {
         firstParticipant.setBattleRoom(newBattleRoom);
         firstParticipant.setResult(BattleResult.IN_PROGRESS);
         newBattleRoom.getParticipants().add(firstParticipant);
-        return null;
+        BattleRoom savedBattleRoom = battleRoomRepository.save(newBattleRoom);
+        return BattleRoomDto.fromEntity(savedBattleRoom);
     }
 
     private String generateUniqueRoomCode() {
