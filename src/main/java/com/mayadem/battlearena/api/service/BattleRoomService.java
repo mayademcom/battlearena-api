@@ -5,7 +5,10 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
+import com.mayadem.battlearena.api.entity.enums.BattleResult;
 import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
@@ -30,6 +33,11 @@ public class BattleRoomService {
         newBattleRoom.setStatus(BattleStatus.WAITING);
         newBattleRoom.setCreatedBy(creator);
         newBattleRoom.setCurrentParticipants(1);
+        BattleParticipant firstParticipant = new BattleParticipant();
+        firstParticipant.setWarrior(creator);
+        firstParticipant.setBattleRoom(newBattleRoom);
+        firstParticipant.setResult(BattleResult.IN_PROGRESS);
+        newBattleRoom.getParticipants().add(firstParticipant);
         return null;
     }
 
