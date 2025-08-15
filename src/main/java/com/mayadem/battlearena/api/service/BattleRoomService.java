@@ -5,7 +5,8 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.mayadem.battlearena.api.entity.BattleRoom;
+import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -23,6 +24,12 @@ public class BattleRoomService {
     @Transactional
     public BattleRoomDto createBattleRoom(StartBattleRequestDto requestDto, Warrior creator) {
         String roomCode = generateUniqueRoomCode();
+        BattleRoom newBattleRoom = new BattleRoom();
+        newBattleRoom.setRoomCode(roomCode);
+        newBattleRoom.setBattleType(requestDto.getBattleType());
+        newBattleRoom.setStatus(BattleStatus.WAITING);
+        newBattleRoom.setCreatedBy(creator);
+        newBattleRoom.setCurrentParticipants(1);
         return null;
     }
 
