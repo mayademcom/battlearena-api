@@ -15,6 +15,9 @@ import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
+import java.util.ArrayList;
+import java.util.List;
+import com.mayadem.battlearena.api.entity.BattleRoom;
 
 @Service
 public class BattleRoomService {
@@ -104,4 +107,13 @@ public class BattleRoomService {
             throw new ResourceNotFoundException("Battle room not found with code: " + roomCode);
         }
     }
+
+    public List<BattleRoomDto> getAvailableBattleRooms() {
+    List<BattleRoom> availableRooms = battleRoomRepository.findByStatus(BattleStatus.WAITING);
+    List<BattleRoomDto> availableRoomDtos = new ArrayList<>();
+    for (BattleRoom room : availableRooms) {
+        availableRoomDtos.add(BattleRoomDto.fromEntity(room));
+    }
+    return availableRoomDtos;
+}
 }
