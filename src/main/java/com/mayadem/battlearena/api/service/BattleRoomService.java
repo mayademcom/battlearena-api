@@ -17,7 +17,6 @@ import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 import java.util.ArrayList;
 import java.util.List;
-import com.mayadem.battlearena.api.entity.BattleRoom;
 
 @Service
 public class BattleRoomService {
