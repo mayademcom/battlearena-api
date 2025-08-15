@@ -75,17 +75,29 @@ public class BattleRoomService {
         if (roomOptional.isPresent()) {
             BattleRoom battleRoom = roomOptional.get();
             if (battleRoom.getStatus() != BattleStatus.WAITING) {
-            throw new BattleRoomNotJoinableException("Battle room is not waiting for players. Current status: " + battleRoom.getStatus());
-        }
-            if (battleRoom.getCurrentParticipants() >= battleRoom.getMaxParticipants()) {
-            throw new BattleRoomNotJoinableException("Battle room is full.");
-        }
-            for (com.mayadem.battlearena.api.entity.BattleParticipant participant : battleRoom.getParticipants()) {
-            if (participant.getWarrior().getId().equals(joiningWarrior.getId())) {
-                throw new BattleRoomNotJoinableException("Player is already in this battle room.");
+                throw new BattleRoomNotJoinableException(
+                        "Battle room is not waiting for players. Current status: " + battleRoom.getStatus());
             }
-        }
-            return null;
+            if (battleRoom.getCurrentParticipants() >= battleRoom.getMaxParticipants()) {
+                throw new BattleRoomNotJoinableException("Battle room is full.");
+            }
+            for (com.mayadem.battlearena.api.entity.BattleParticipant participant : battleRoom.getParticipants()) {
+                if (participant.getWarrior().getId().equals(joiningWarrior.getId())) {
+                    throw new BattleRoomNotJoinableException("Player is already in this battle room.");
+                }
+            }
+            BattleParticipant newParticipant = new BattleParticipant();
+            newParticipant.setWarrior(joiningWarrior);
+            newParticipant.setBattleRoom(battleRoom);
+            newParticipant.setResult(BattleResult.IN_PROGRESS);
+            battleRoom.getParticipants().add(newParticipant);
+            battleRoom.setCurrentParticipants(battleRoom.getCurrentParticipants() + 1);
+            if (battleRoom.getCurrentParticipants().equals(battleRoom.getMaxParticipants())) {
+                battleRoom.setStatus(BattleStatus.IN_PROGRESS);
+                battleRoom.setStartedAt(java.time.Instant.now());
+            }
+            BattleRoom updatedRoom = battleRoomRepository.save(battleRoom);
+            return BattleRoomDto.fromEntity(updatedRoom);
 
         } else {
 
