@@ -36,6 +36,7 @@ public class BattleRoomService {
         newBattleRoom.setStatus(BattleStatus.WAITING);
         newBattleRoom.setCreatedBy(creator);
         newBattleRoom.setCurrentParticipants(1);
+        creator.setTotalBattles(creator.getTotalBattles() + 1);
         BattleParticipant firstParticipant = new BattleParticipant();
         firstParticipant.setWarrior(creator);
         firstParticipant.setBattleRoom(newBattleRoom);
@@ -88,6 +89,7 @@ public class BattleRoomService {
                     throw new BattleRoomNotJoinableException("Player is already in this battle room.");
                 }
             }
+            joiningWarrior.setTotalBattles(joiningWarrior.getTotalBattles() + 1);
             BattleParticipant newParticipant = new BattleParticipant();
             newParticipant.setWarrior(joiningWarrior);
             newParticipant.setBattleRoom(battleRoom);
