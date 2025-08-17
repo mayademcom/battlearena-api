@@ -155,4 +155,23 @@ public class BattleRoom {
     public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;
     }
+
+    public Warrior getOpponentOf(Warrior me) {
+        for (BattleParticipant participant : participants) {
+            if (!participant.getWarrior().equals(me)) {
+                return participant.getWarrior();
+            }
+        }
+        throw new IllegalStateException("Opponent not found");
+    }
+
+    public int getOpponentScoreOf(Warrior me) {
+        for (BattleParticipant participant : participants) {
+            if (!participant.getWarrior().equals(me)) {
+                return participant.getFinalScore() != null ? participant.getFinalScore() : 0;
+            }
+        }
+        throw new IllegalStateException("Opponent score not found");
+    }
+
 }
