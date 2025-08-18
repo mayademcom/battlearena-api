@@ -8,7 +8,7 @@ public class BattleResultResponseDto {
 
     private Long battleRoomId;
     private BattleType battleType;
-    private int finalScore;
+    private String finalScore;
     private BattleResult result;
     private int rankPointsChange;
     private int newRankPoints;
@@ -31,11 +31,11 @@ public class BattleResultResponseDto {
         this.battleType = battleType;
     }
 
-    public int getFinalScore() {
+    public String getFinalScore() {
         return finalScore;
     }
 
-    public void setFinalScore(int finalScore) {
+    public void setFinalScore(String finalScore) {
         this.finalScore = finalScore;
     }
 
