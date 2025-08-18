@@ -23,8 +23,8 @@ public class BattleCompletionService {
     private final BattleRoomRepository battleRoomRepository;
 
     public BattleCompletionService(ScoringService scoringService,
-            WarriorRepository warriorRepository,
-            BattleRoomRepository battleRoomRepository) {
+                                   WarriorRepository warriorRepository,
+                                   BattleRoomRepository battleRoomRepository) {
         this.scoringService = scoringService;
         this.warriorRepository = warriorRepository;
         this.battleRoomRepository = battleRoomRepository;
@@ -39,6 +39,7 @@ public class BattleCompletionService {
         Warrior me = warriorRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Warrior not found"));
 
+        // Bu iki metot BattleRoom içinde senin yazdıkların
         Warrior opponent = battleRoom.getOpponentOf(me);
         int myScore = request.getScore();
         int opponentScore = battleRoom.getOpponentScoreOf(me);
@@ -49,37 +50,43 @@ public class BattleCompletionService {
         int rankPointsChange = 0;
         if (battleRoom.getBattleType() == BattleType.RANKED) {
             if (myResult == BattleResult.WIN) {
-                rankPointsChange = scoringService.calculateRankPointsChange(myScore, opponentScore,
-                        battleRoom.getBattleType());
+                rankPointsChange = scoringService.calculateRankPointsChange(myScore, opponentScore, battleRoom.getBattleType());
                 me.setRankPoints(me.getRankPoints() + rankPointsChange);
                 opponent.setRankPoints(Math.max(0, opponent.getRankPoints() - rankPointsChange));
             } else if (myResult == BattleResult.LOSS) {
-                rankPointsChange = scoringService.calculateRankPointsChange(opponentScore, myScore,
-                        battleRoom.getBattleType());
+                rankPointsChange = scoringService.calculateRankPointsChange(opponentScore, myScore, battleRoom.getBattleType());
                 me.setRankPoints(Math.max(0, me.getRankPoints() - rankPointsChange));
                 opponent.setRankPoints(opponent.getRankPoints() + rankPointsChange);
-            }
+            } // DRAW ise 0 değişir
         }
 
+        // İstatistik güncelle (Warrior#updateStats metodunun sende tanımlı olduğunu varsayıyoruz)
         me.updateStats(myResult, myScore);
         opponent.updateStats(opponentResult, opponentScore);
 
         warriorRepository.save(me);
         warriorRepository.save(opponent);
 
+        // Rakibin önceki puanını doğru hesapla:
+        int opponentRankPointsAfter = opponent.getRankPoints();
+        int opponentRankPointsBefore =
+                (myResult == BattleResult.WIN)  ? opponentRankPointsAfter + rankPointsChange :
+                (myResult == BattleResult.LOSS) ? opponentRankPointsAfter - rankPointsChange :
+                                                  opponentRankPointsAfter;
+
         BattleOpponentDto opponentDto = new BattleOpponentDto();
         opponentDto.setUsername(opponent.getUsername());
         opponentDto.setDisplayName(opponent.getDisplayName());
         opponentDto.setScore(opponentScore);
-        opponentDto.setResult(opponentResult.name());
-        opponentDto.setRankPointsBefore(opponent.getRankPoints() - rankPointsChange); // önceki puan
-        opponentDto.setRankPointsAfter(opponent.getRankPoints());
+        opponentDto.setResult(opponentResult); // <-- enum veriyoruz
+        opponentDto.setRankPointsBefore(opponentRankPointsBefore);
+        opponentDto.setRankPointsAfter(opponentRankPointsAfter);
 
         BattleResultResponseDto response = new BattleResultResponseDto();
         response.setBattleRoomId(request.getBattleRoomId());
-        response.setBattleType(battleRoom.getBattleType().name());
+        response.setBattleType(battleRoom.getBattleType()); // <-- enum veriyoruz
         response.setFinalScore(myScore + " - " + opponentScore);
-        response.setResult(myResult.name());
+        response.setResult(myResult); // <-- enum veriyoruz
         response.setRankPointsChange(rankPointsChange);
         response.setNewRankPoints(me.getRankPoints());
         response.setCompletedAt(LocalDateTime.now());

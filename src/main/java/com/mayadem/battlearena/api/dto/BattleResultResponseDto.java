@@ -1,67 +1,82 @@
 package com.mayadem.battlearena.api.dto;
 
 import java.time.LocalDateTime;
+import com.mayadem.battlearena.api.entity.enums.BattleResult;
+import com.mayadem.battlearena.api.entity.enums.BattleType;
 
 public class BattleResultResponseDto {
 
     private Long battleRoomId;
-    private String battleType;
+    private BattleType battleType;
     private String finalScore;
-    private String result;
+    private BattleResult result;
     private int rankPointsChange;
     private int newRankPoints;
     private LocalDateTime completedAt;
     private BattleOpponentDto opponent;
 
-    
     public Long getBattleRoomId() {
         return battleRoomId;
     }
+
     public void setBattleRoomId(Long battleRoomId) {
         this.battleRoomId = battleRoomId;
     }
-    public String getBattleType() {
+
+    public BattleType getBattleType() {
         return battleType;
     }
-    public void setBattleType(String battleType) {
+
+    public void setBattleType(BattleType battleType) {
         this.battleType = battleType;
     }
+
     public String getFinalScore() {
         return finalScore;
     }
+
     public void setFinalScore(String finalScore) {
         this.finalScore = finalScore;
     }
-    public String getResult() {
+
+    public BattleResult getResult() {
         return result;
     }
-    public void setResult(String result) {
+
+    public void setResult(BattleResult result) {
         this.result = result;
     }
+
     public int getRankPointsChange() {
         return rankPointsChange;
     }
+
     public void setRankPointsChange(int rankPointsChange) {
         this.rankPointsChange = rankPointsChange;
     }
+
     public int getNewRankPoints() {
         return newRankPoints;
     }
+
     public void setNewRankPoints(int newRankPoints) {
         this.newRankPoints = newRankPoints;
     }
+
     public LocalDateTime getCompletedAt() {
         return completedAt;
     }
+
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
     }
+
     public BattleOpponentDto getOpponent() {
         return opponent;
     }
+
     public void setOpponent(BattleOpponentDto opponent) {
         this.opponent = opponent;
     }
 
-    
 }
