@@ -67,7 +67,7 @@ public class BattleController {
     }
 
     @PostMapping("/submit-result")
-    public ResponseEntity<?> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
+    public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
             Principal principal) {
         try {
             // Principal'den kullanıcı adı
@@ -88,7 +88,7 @@ public class BattleController {
     @GetMapping("/{battleRoomId}/status")
     public ResponseEntity<String> getBattleStatus(@PathVariable Long battleRoomId) {
         return battleRoomService.getBattleStatus(battleRoomId)
-                .map(status -> ResponseEntity.ok(status))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
     }
 
