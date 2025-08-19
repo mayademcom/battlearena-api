@@ -114,6 +114,11 @@ public class BattleRoomService {
         if (battleParticipantRepository.existsByBattleRoomAndWarrior(battleRoom, joiningWarrior)) {
             throw new BattleRoomNotJoinableException("Player is already in this battle room.");
         }
+        List<BattleParticipant> activeBattles = battleParticipantRepository
+                .findByWarriorAndBattleRoomStatus(joiningWarrior, BattleStatus.IN_PROGRESS);
+        if (!activeBattles.isEmpty()) {
+            throw new BattleRoomNotJoinableException("Player is already in another active battle.");
+        }
     }
 
     private void addParticipantAndUpdateRoom(BattleRoom battleRoom, Warrior joiningWarrior) {
