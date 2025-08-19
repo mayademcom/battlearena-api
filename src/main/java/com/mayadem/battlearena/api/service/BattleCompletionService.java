@@ -76,9 +76,16 @@ public class BattleCompletionService {
 
         // Rakibin önceki puanını doğru hesapla:
         int opponentRankPointsAfter = opponent.getRankPoints();
-        int opponentRankPointsBefore = (myResult == BattleResult.WIN) ? opponentRankPointsAfter + rankPointsChange
-                : (myResult == BattleResult.LOSS) ? opponentRankPointsAfter - rankPointsChange
-                        : opponentRankPointsAfter;
+int opponentRankPointsBefore;
+
+if (myResult == BattleResult.WIN) {
+    opponentRankPointsBefore = opponentRankPointsAfter + rankPointsChange;
+} else if (myResult == BattleResult.LOSS) {
+    opponentRankPointsBefore = opponentRankPointsAfter - rankPointsChange;
+} else {
+    opponentRankPointsBefore = opponentRankPointsAfter;
+}
+
 
         opponentInfo.setResult(opponentResult);
         opponentInfo.setRankPointsBefore(opponentRankPointsBefore);
