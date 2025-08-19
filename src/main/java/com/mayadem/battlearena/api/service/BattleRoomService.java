@@ -16,6 +16,7 @@ import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BattleRoomService {
@@ -116,4 +117,9 @@ public class BattleRoomService {
     }
     return availableRoomDtos;
 }
+
+    public Optional<String> getBattleStatus(Long battleRoomId) {
+        return battleRoomRepository.findById(battleRoomId)
+                .map(battleRoom -> battleRoom.getStatus().name());
+    }
 }

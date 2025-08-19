@@ -10,7 +10,6 @@ import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
-import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,13 +30,10 @@ public class BattleController {
 
     private final BattleRoomService battleRoomService;
     private final BattleCompletionService battleCompletionService;
-    private final BattleRoomRepository battleRoomRepository;
 
-    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService,
-            BattleRoomRepository battleRoomRepository) {
+    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService) {
         this.battleRoomService = battleRoomService;
         this.battleCompletionService = battleCompletionService;
-        this.battleRoomRepository = battleRoomRepository;
     }
 
     @PostMapping
@@ -71,7 +67,7 @@ public class BattleController {
     }
 
     @PostMapping("/submit-result")
-    public ResponseEntity<?> submitBattleResult(@RequestBody SubmitBattleResultRequestDto request,
+    public ResponseEntity<?> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
             Principal principal) {
         try {
             // Principal'den kullanıcı adı
@@ -90,9 +86,9 @@ public class BattleController {
     }
 
     @GetMapping("/{battleRoomId}/status")
-    public ResponseEntity<?> getBattleStatus(@PathVariable Long battleRoomId) {
-        return battleRoomRepository.findById(battleRoomId)
-                .map(battleRoom -> ResponseEntity.ok(battleRoom.getStatus().name()))
+    public ResponseEntity<String> getBattleStatus(@PathVariable Long battleRoomId) {
+        return battleRoomService.getBattleStatus(battleRoomId)
+                .map(status -> ResponseEntity.ok(status))
                 .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
     }
 
