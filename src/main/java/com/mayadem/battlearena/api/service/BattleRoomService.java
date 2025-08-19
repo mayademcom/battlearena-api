@@ -24,9 +24,10 @@ import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 public class BattleRoomService {
 
     private final BattleRoomRepository battleRoomRepository;
-     private final BattleParticipantRepository battleParticipantRepository;
+    private final BattleParticipantRepository battleParticipantRepository;
 
-    public BattleRoomService(BattleRoomRepository battleRoomRepository, BattleParticipantRepository battleParticipantRepository) {
+    public BattleRoomService(BattleRoomRepository battleRoomRepository,
+            BattleParticipantRepository battleParticipantRepository) {
         this.battleRoomRepository = battleRoomRepository;
         this.battleParticipantRepository = battleParticipantRepository;
     }
@@ -78,45 +79,59 @@ public class BattleRoomService {
 
     @Transactional
     public BattleRoomDto joinBattleRoom(String roomCode, Warrior joiningWarrior) {
-        java.util.Optional<BattleRoom> roomOptional = battleRoomRepository.findByRoomCode(roomCode);
-        if (roomOptional.isPresent()) {
-            BattleRoom battleRoom = roomOptional.get();
-            if (battleRoom.getStatus() != BattleStatus.WAITING) {
-                throw new BattleRoomNotJoinableException(
-                        "Battle room is not waiting for players. Current status: " + battleRoom.getStatus());
-            }
-            if (battleRoom.getCurrentParticipants() >= battleRoom.getMaxParticipants()) {
-                throw new BattleRoomNotJoinableException("Battle room is full.");
-            }
-            if (battleParticipantRepository.existsByBattleRoomAndWarrior(battleRoom, joiningWarrior)) {
-            throw new BattleRoomNotJoinableException("Player is already in this battle room.");
-        }
-            joiningWarrior.setTotalBattles(joiningWarrior.getTotalBattles() + 1);
-            BattleParticipant newParticipant = new BattleParticipant();
-            newParticipant.setWarrior(joiningWarrior);
-            newParticipant.setBattleRoom(battleRoom);
-            newParticipant.setResult(BattleResult.IN_PROGRESS);
-            battleRoom.getParticipants().add(newParticipant);
-            battleRoom.setCurrentParticipants(battleRoom.getCurrentParticipants() + 1);
-            if (battleRoom.getCurrentParticipants().equals(battleRoom.getMaxParticipants())) {
-                battleRoom.setStatus(BattleStatus.IN_PROGRESS);
-                battleRoom.setStartedAt(java.time.Instant.now());
-            }
-            BattleRoom updatedRoom = battleRoomRepository.save(battleRoom);
-            return BattleRoomDto.fromEntity(updatedRoom);
 
-        } else {
+        BattleRoom battleRoom = battleRoomRepository.findByRoomCode(roomCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Battle room not found with code: " + roomCode));
 
-            throw new ResourceNotFoundException("Battle room not found with code: " + roomCode);
-        }
+        validateRoomIsJoinable(battleRoom, joiningWarrior);
+
+        addParticipantAndUpdateRoom(battleRoom, joiningWarrior);
+
+        BattleRoom updatedRoom = battleRoomRepository.save(battleRoom);
+
+        return BattleRoomDto.fromEntity(updatedRoom);
     }
 
     public List<BattleRoomDto> getAvailableBattleRooms() {
-    List<BattleRoom> availableRooms = battleRoomRepository.findByStatus(BattleStatus.WAITING);
-    List<BattleRoomDto> availableRoomDtos = new ArrayList<>();
-    for (BattleRoom room : availableRooms) {
-        availableRoomDtos.add(BattleRoomDto.fromEntity(room));
+        List<BattleRoom> availableRooms = battleRoomRepository.findByStatus(BattleStatus.WAITING);
+        List<BattleRoomDto> availableRoomDtos = new ArrayList<>();
+        for (BattleRoom room : availableRooms) {
+            availableRoomDtos.add(BattleRoomDto.fromEntity(room));
+        }
+        return availableRoomDtos;
     }
-    return availableRoomDtos;
-}
+
+    private void validateRoomIsJoinable(BattleRoom battleRoom, Warrior joiningWarrior) {
+        if (battleRoom.getStatus() != BattleStatus.WAITING) {
+            throw new BattleRoomNotJoinableException(
+                    "Battle room is not waiting for players. Current status: " + battleRoom.getStatus());
+        }
+
+        if (battleRoom.getCurrentParticipants() >= battleRoom.getMaxParticipants()) {
+            throw new BattleRoomNotJoinableException("Battle room is full.");
+        }
+
+        if (battleParticipantRepository.existsByBattleRoomAndWarrior(battleRoom, joiningWarrior)) {
+            throw new BattleRoomNotJoinableException("Player is already in this battle room.");
+        }
+    }
+
+    private void addParticipantAndUpdateRoom(BattleRoom battleRoom, Warrior joiningWarrior) {
+
+        joiningWarrior.setTotalBattles(joiningWarrior.getTotalBattles() + 1);
+
+        BattleParticipant newParticipant = new BattleParticipant();
+        newParticipant.setWarrior(joiningWarrior);
+        newParticipant.setBattleRoom(battleRoom);
+        newParticipant.setResult(BattleResult.IN_PROGRESS);
+
+        battleRoom.getParticipants().add(newParticipant);
+
+        battleRoom.setCurrentParticipants(battleRoom.getCurrentParticipants() + 1);
+
+        if (battleRoom.getCurrentParticipants().equals(battleRoom.getMaxParticipants())) {
+            battleRoom.setStatus(BattleStatus.IN_PROGRESS);
+            battleRoom.setStartedAt(java.time.Instant.now());
+        }
+    }
 }
