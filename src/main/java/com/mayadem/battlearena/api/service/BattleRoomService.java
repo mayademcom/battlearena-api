@@ -19,8 +19,6 @@ import com.mayadem.battlearena.api.exception.BattleRoomNotJoinableException;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
