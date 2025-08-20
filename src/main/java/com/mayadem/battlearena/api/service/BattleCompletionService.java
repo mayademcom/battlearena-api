@@ -11,7 +11,6 @@ import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
-import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
 
@@ -31,13 +30,10 @@ public class BattleCompletionService {
     }
 
     @Transactional
-    public BattleResultResponseDto completeBattle(SubmitBattleResultRequestDto request, String username) {
+    public BattleResultResponseDto completeBattle(SubmitBattleResultRequestDto request, Warrior me) {
 
         BattleRoom battleRoom = battleRoomRepository.findById(request.getBattleRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("BattleRoom not found"));
-
-        Warrior me = warriorRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Warrior not found"));
 
         // Bu iki metot BattleRoom içinde senin yazdıkların
         int myScore = request.getScore();
@@ -51,20 +47,16 @@ public class BattleCompletionService {
         BattleResult myResult = scoringService.determineBattleResult(myScore, opponentScore);
         BattleResult opponentResult = scoringService.determineBattleResult(opponentScore, myScore);
 
-        int rankPointsChange = 0;
-        if (battleRoom.getBattleType() == BattleType.RANKED) {
-            if (myResult == BattleResult.WIN) {
-                rankPointsChange = scoringService.calculateRankPointsChange(myScore, opponentScore,
-                        battleRoom.getBattleType());
-                me.setRankPoints(me.getRankPoints() + rankPointsChange);
-                opponent.setRankPoints(Math.max(0, opponent.getRankPoints() - rankPointsChange));
-            } else if (myResult == BattleResult.LOSS) {
-                rankPointsChange = scoringService.calculateRankPointsChange(opponentScore, myScore,
-                        battleRoom.getBattleType());
-                me.setRankPoints(Math.max(0, me.getRankPoints() - rankPointsChange));
-                opponent.setRankPoints(opponent.getRankPoints() + rankPointsChange);
-            } // DRAW ise 0 değişir
-        }
+         int rankPointsChange = scoringService.calculateRankPointsChange(myScore, opponentScore, battleRoom.getBattleType());
+
+    // Puan güncellemeleri
+    if (myResult == BattleResult.WIN) {
+        me.setRankPoints(me.getRankPoints() + rankPointsChange);
+        opponent.setRankPoints(Math.max(0, opponent.getRankPoints() - rankPointsChange));
+    } else if (myResult == BattleResult.LOSS) {
+        me.setRankPoints(Math.max(0, me.getRankPoints() - rankPointsChange));
+        opponent.setRankPoints(opponent.getRankPoints() + rankPointsChange);
+    }
 
         // İstatistik güncelle (Warrior#updateStats metodunun sende tanımlı olduğunu
         // varsayıyoruz)
