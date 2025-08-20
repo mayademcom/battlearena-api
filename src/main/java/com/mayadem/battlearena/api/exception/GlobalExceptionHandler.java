@@ -43,5 +43,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlePasswordConfirmation(PasswordConfirmationException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+    @ExceptionHandler(BattleRoomNotJoinableException.class)
+    public ResponseEntity<ErrorResponseDto> handleBattleRoomNotJoinable(BattleRoomNotJoinableException ex) {
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.CONFLICT.value(), 
+            "Battle Rule Violation",
+            ex.getMessage() 
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
 
 }
