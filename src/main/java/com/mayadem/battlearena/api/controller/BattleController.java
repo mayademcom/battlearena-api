@@ -1,7 +1,16 @@
 package com.mayadem.battlearena.api.controller;
 
-import com.mayadem.battlearena.api.service.BattleCompletionService;
-import com.mayadem.battlearena.api.service.BattleRoomService;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,19 +19,10 @@ import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.service.BattleCompletionService;
+import com.mayadem.battlearena.api.service.BattleRoomService;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
-
-import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/battles")
@@ -67,29 +67,25 @@ public class BattleController {
     }
 
     @PostMapping("/submit-result")
-    public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
-            Principal principal) {
-        try {
-            // Principal'den kullanıcı adı
-            String username = principal.getName();
-
-            // BattleCompletionService ile battle sonucunu tamamla
-            BattleResultResponseDto result = battleCompletionService.completeBattle(request, username);
-
-            return ResponseEntity.ok(result);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-        }
+    public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Warrior me = (Warrior) authentication.getPrincipal();
+    BattleResultResponseDto result = battleCompletionService.completeBattle(request, me);
+    return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/{battleRoomId}/status")
     public ResponseEntity<String> getBattleStatus(@PathVariable Long battleRoomId) {
-        return battleRoomService.getBattleStatus(battleRoomId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
+        
+    Optional<String> statusOptional = battleRoomService.getBattleStatus(battleRoomId);
+
+    
+    if (statusOptional.isPresent()) {
+        return new ResponseEntity<>(statusOptional.get(), HttpStatus.OK);
+    } else {
+       
+        return new ResponseEntity<>("BattleRoom not found.", HttpStatus.NOT_FOUND);
+    }
+}
     }
 
-}
