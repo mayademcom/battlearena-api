@@ -1,6 +1,7 @@
 package com.mayadem.battlearena.api.dto;
 
 import java.time.LocalDateTime;
+
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 
@@ -8,7 +9,8 @@ public class BattleResultResponseDto {
 
     private Long battleRoomId;
     private BattleType battleType;
-    private String finalScore;
+    private int myScore;
+    private int opponentScore;
     private BattleResult result;
     private int rankPointsChange;
     private int newRankPoints;
@@ -31,12 +33,20 @@ public class BattleResultResponseDto {
         this.battleType = battleType;
     }
 
-    public String getFinalScore() {
-        return finalScore;
+    public int getMyScore() {
+        return myScore;
     }
 
-    public void setFinalScore(String finalScore) {
-        this.finalScore = finalScore;
+    public void setMyScore(int myScore) {
+        this.myScore = myScore;
+    }
+
+    public int getOpponentScore() {
+        return opponentScore;
+    }
+
+    public void setOpponentScore(int opponentScore) {
+        this.opponentScore = opponentScore;
     }
 
     public BattleResult getResult() {
