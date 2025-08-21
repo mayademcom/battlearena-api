@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mayadem.battlearena.api.dto.BattleOpponentDto;
 import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 
@@ -155,4 +156,18 @@ public class BattleRoom {
     public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;
     }
+
+    public BattleOpponentDto getOpponentInfo(Warrior me) {
+    for (BattleParticipant participant : participants) {
+        if (!participant.getWarrior().equals(me)) {
+            BattleOpponentDto dto = new BattleOpponentDto();
+            dto.setUsername(participant.getWarrior().getUsername());
+            dto.setDisplayName(participant.getWarrior().getDisplayName());
+            dto.setScore(participant.getFinalScore() != null ? participant.getFinalScore() : 0);
+            return dto;
+        }
+    }
+    throw new IllegalStateException("Opponent not found");
+}
+
 }
