@@ -1,6 +1,8 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,99 +10,126 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mayadem.battlearena.api.dto.BattleOpponentDto;
 import com.mayadem.battlearena.api.dto.BattleResultResponseDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
+import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
+import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
-import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 @Service
 public class BattleCompletionService {
 
     private final ScoringService scoringService;
-    private final WarriorRepository warriorRepository;
     private final BattleRoomRepository battleRoomRepository;
+ 
 
     public BattleCompletionService(ScoringService scoringService,
-            WarriorRepository warriorRepository,
-            BattleRoomRepository battleRoomRepository) {
+                                   BattleRoomRepository battleRoomRepository) {
         this.scoringService = scoringService;
-        this.warriorRepository = warriorRepository;
         this.battleRoomRepository = battleRoomRepository;
     }
 
     @Transactional
-    public BattleResultResponseDto completeBattle(SubmitBattleResultRequestDto request, String username) {
+    public BattleResultResponseDto completeBattle(SubmitBattleResultRequestDto request, Warrior me) {
 
         BattleRoom battleRoom = battleRoomRepository.findById(request.getBattleRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("BattleRoom not found"));
+                .orElseThrow(() -> new IllegalArgumentException("BattleRoom not found with ID: " + request.getBattleRoomId()));
 
-        Warrior me = warriorRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Warrior not found"));
+        BattleParticipant meAsParticipant = findParticipant(battleRoom, me);
+        BattleParticipant opponentAsParticipant = findOpponent(battleRoom, me);
+        Warrior opponent = opponentAsParticipant.getWarrior();
 
-        // Bu iki metot BattleRoom içinde senin yazdıkların
-        int myScore = request.getScore();
-        BattleOpponentDto opponentInfo = battleRoom.getOpponentInfo(me);
-        int opponentScore = opponentInfo.getScore();
-
-        // Rakibi entity olarak da lazım olacağı için:
-        Warrior opponent = warriorRepository.findByUsername(opponentInfo.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Opponent not found"));
+       
+        int myScore = request.getMyScore();
+        int opponentScore = request.getOpponentScore();
 
         BattleResult myResult = scoringService.determineBattleResult(myScore, opponentScore);
         BattleResult opponentResult = scoringService.determineBattleResult(opponentScore, myScore);
 
+       
+        meAsParticipant.setFinalScore(myScore);
+        meAsParticipant.setResult(myResult);
+        opponentAsParticipant.setFinalScore(opponentScore);
+        opponentAsParticipant.setResult(opponentResult);
+        
+        int myRankPointsBefore = me.getRankPoints();
+        int opponentRankPointsBefore = opponent.getRankPoints();
+
+        meAsParticipant.setRankPointsBefore(myRankPointsBefore);
+        opponentAsParticipant.setRankPointsBefore(opponentRankPointsBefore);
+        
+        
         int rankPointsChange = 0;
         if (battleRoom.getBattleType() == BattleType.RANKED) {
-            if (myResult == BattleResult.WIN) {
-                rankPointsChange = scoringService.calculateRankPointsChange(myScore, opponentScore,
-                        battleRoom.getBattleType());
-                me.setRankPoints(me.getRankPoints() + rankPointsChange);
-                opponent.setRankPoints(Math.max(0, opponent.getRankPoints() - rankPointsChange));
-            } else if (myResult == BattleResult.LOSS) {
-                rankPointsChange = scoringService.calculateRankPointsChange(opponentScore, myScore,
-                        battleRoom.getBattleType());
-                me.setRankPoints(Math.max(0, me.getRankPoints() - rankPointsChange));
-                opponent.setRankPoints(opponent.getRankPoints() + rankPointsChange);
-            } // DRAW ise 0 değişir
-        }
+            Warrior winner = (myResult == BattleResult.WIN) ? me : opponent;
+            Warrior loser = (myResult == BattleResult.WIN) ? opponent : me;
+            int winnerScore = (myResult == BattleResult.WIN) ? myScore : opponentScore;
+            int loserScore = (myResult == BattleResult.WIN) ? opponentScore : myScore;
+            
+            rankPointsChange = scoringService.calculateRankPointsChange(winnerScore, loserScore, battleRoom.getBattleType());
 
-        // İstatistik güncelle (Warrior#updateStats metodunun sende tanımlı olduğunu
-        // varsayıyoruz)
+            winner.setRankPoints(winner.getRankPoints() + rankPointsChange);
+            loser.setRankPoints(Math.max(0, loser.getRankPoints() - rankPointsChange));
+        }
+        
         me.updateStats(myResult, myScore);
         opponent.updateStats(opponentResult, opponentScore);
 
-        warriorRepository.save(me);
-        warriorRepository.save(opponent);
+        meAsParticipant.setRankPointsAfter(me.getRankPoints());
+        opponentAsParticipant.setRankPointsAfter(opponent.getRankPoints());
+        meAsParticipant.setRankPointsChange((myResult == BattleResult.WIN) ? rankPointsChange : -rankPointsChange);
+        opponentAsParticipant.setRankPointsChange((opponentResult == BattleResult.WIN) ? rankPointsChange : -rankPointsChange);
 
-        // Rakibin önceki puanını doğru hesapla:
-        int opponentRankPointsAfter = opponent.getRankPoints();
-int opponentRankPointsBefore;
+        battleRoom.setStatus(BattleStatus.COMPLETED);
+        battleRoom.setCompletedAt(Instant.now());
 
-if (myResult == BattleResult.WIN) {
-    opponentRankPointsBefore = opponentRankPointsAfter + rankPointsChange;
-} else if (myResult == BattleResult.LOSS) {
-    opponentRankPointsBefore = opponentRankPointsAfter - rankPointsChange;
-} else {
-    opponentRankPointsBefore = opponentRankPointsAfter;
-}
+        BattleRoom savedRoom = battleRoomRepository.save(battleRoom);
 
-
-        opponentInfo.setResult(opponentResult);
-        opponentInfo.setRankPointsBefore(opponentRankPointsBefore);
-        opponentInfo.setRankPointsAfter(opponentRankPointsAfter);
-
-        BattleResultResponseDto response = new BattleResultResponseDto();
-        response.setBattleRoomId(request.getBattleRoomId());
-        response.setBattleType(battleRoom.getBattleType()); // <-- enum veriyoruz
-        response.setFinalScore(myScore + " - " + opponentScore);
-        response.setResult(myResult); // <-- enum veriyoruz
-        response.setRankPointsChange(rankPointsChange);
-        response.setNewRankPoints(me.getRankPoints());
-        response.setCompletedAt(LocalDateTime.now());
-        response.setOpponent(opponentInfo);
-
-        return response;
+        
+        return buildResponseDto(savedRoom, meAsParticipant, opponentAsParticipant);
     }
+
+    private BattleParticipant findParticipant(BattleRoom battleRoom, Warrior warrior) {
+        return battleRoom.getParticipants().stream()
+                .filter(p -> p.getWarrior().getId().equals(warrior.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Warrior with ID " + warrior.getId() + " is not a participant in this battle."));
+    }
+
+    private BattleParticipant findOpponent(BattleRoom battleRoom, Warrior me) {
+        return battleRoom.getParticipants().stream()
+                .filter(p -> !p.getWarrior().getId().equals(me.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Opponent not found in this battle."));
+    }
+    
+    
+
+private BattleResultResponseDto buildResponseDto(BattleRoom room, BattleParticipant me, BattleParticipant opponent) {
+    
+    BattleOpponentDto opponentDto = new BattleOpponentDto();
+    opponentDto.setUsername(opponent.getWarrior().getUsername());
+    opponentDto.setDisplayName(opponent.getWarrior().getDisplayName());
+    opponentDto.setScore(opponent.getFinalScore());
+    opponentDto.setResult(opponent.getResult());
+    opponentDto.setRankPointsBefore(opponent.getRankPointsBefore());
+    opponentDto.setRankPointsAfter(opponent.getRankPointsAfter());
+
+    
+    BattleResultResponseDto response = new BattleResultResponseDto();
+    response.setBattleRoomId(room.getId());
+    response.setBattleType(room.getBattleType());
+    response.setResult(me.getResult());
+    response.setRankPointsChange(me.getRankPointsChange());
+    response.setNewRankPoints(me.getRankPointsAfter());
+    response.setCompletedAt(LocalDateTime.ofInstant(room.getCompletedAt(), ZoneId.systemDefault()));
+    response.setOpponent(opponentDto);
+     
+    response.setMyScore(me.getFinalScore());
+    response.setOpponentScore(opponent.getFinalScore());
+
+    return response;
+}
 }

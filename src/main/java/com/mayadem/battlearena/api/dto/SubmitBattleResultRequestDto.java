@@ -5,13 +5,17 @@ import jakarta.validation.constraints.NotNull;
 
 public class SubmitBattleResultRequestDto {
     
-    @NotNull(message = "Battle room ID cannot be null")
+    @NotNull(message = "Battle room ID cannot be null.")
     private Long battleRoomId;
 
-    @Min(value = 1, message = "Score must be a positive integer")
-    private int score;
+    @Min(value = 0, message = "Score cannot be negative.")
+    private int myScore;
+
+    @Min(value = 0, message = "Opponent score cannot be negative.")
+    private int opponentScore;
 
     private String notes;
+
 
     public Long getBattleRoomId() {
         return battleRoomId;
@@ -21,12 +25,20 @@ public class SubmitBattleResultRequestDto {
         this.battleRoomId = battleRoomId;
     }
 
-    public int getScore() {
-        return score;
+    public int getMyScore() {
+        return myScore;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public void setMyScore(int myScore) {
+        this.myScore = myScore;
+    }
+
+    public int getOpponentScore() {
+        return opponentScore;
+    }
+
+    public void setOpponentScore(int opponentScore) {
+        this.opponentScore = opponentScore;
     }
 
     public String getNotes() {
