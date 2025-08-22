@@ -3,6 +3,7 @@ package com.mayadem.battlearena.api.entity;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -232,5 +233,18 @@ public class Warrior implements UserDetails {
             bestScore = score;
         }
     }
+
+    @Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Warrior warrior = (Warrior) o;
+    return Objects.equals(id, warrior.id);
+}
+
+@Override
+public int hashCode() {
+    return Objects.hash(id);
+}
 
 }

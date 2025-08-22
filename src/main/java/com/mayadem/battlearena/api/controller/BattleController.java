@@ -1,7 +1,6 @@
 package com.mayadem.battlearena.api.controller;
-
+import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.mayadem.battlearena.api.dto.BattleResultResponseDto;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.service.BattleCompletionService;
 import com.mayadem.battlearena.api.service.BattleRoomService;
 
@@ -67,25 +66,27 @@ public class BattleController {
     }
 
     @PostMapping("/submit-result")
-    public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    Warrior me = (Warrior) authentication.getPrincipal();
-    BattleResultResponseDto result = battleCompletionService.completeBattle(request, me);
-    return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
+                                                     @AuthenticationPrincipal Warrior requester){
+        try {
+            Object result = battleCompletionService.submitAndProcessScore(request, requester);
+
+            return ResponseEntity.ok(result);
+
+        } catch (IllegalArgumentException | ResourceNotFoundException e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
     }
 
     @GetMapping("/{battleRoomId}/status")
     public ResponseEntity<String> getBattleStatus(@PathVariable Long battleRoomId) {
-        
-    Optional<String> statusOptional = battleRoomService.getBattleStatus(battleRoomId);
-
-    
-    if (statusOptional.isPresent()) {
-        return new ResponseEntity<>(statusOptional.get(), HttpStatus.OK);
-    } else {
-       
-        return new ResponseEntity<>("BattleRoom not found.", HttpStatus.NOT_FOUND);
+        return battleRoomService.getBattleStatus(battleRoomId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
     }
 }
-    }
-
