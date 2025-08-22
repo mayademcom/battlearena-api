@@ -1,5 +1,13 @@
 package com.mayadem.battlearena.api.service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.mayadem.battlearena.api.dto.BattleOpponentDto;
 import com.mayadem.battlearena.api.dto.BattleResultResponseDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
@@ -13,14 +21,6 @@ import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
 import com.mayadem.battlearena.api.repository.WarriorRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class BattleCompletionService {
@@ -78,8 +78,15 @@ public class BattleCompletionService {
             throw new IllegalStateException("Battle finalization is currently supported for 1v1 matches only.");
         }
 
-        BattleParticipant me = participants.stream().filter(p -> p.getWarrior().equals(requester)).findFirst().get();
-        BattleParticipant opponent = participants.stream().filter(p -> !p.getWarrior().equals(requester)).findFirst().get();
+        BattleParticipant me = participants.stream()
+        .filter(p -> p.getWarrior().equals(requester))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("Battle finalization error: Requesting warrior could not be found in participants list."));
+
+BattleParticipant opponent = participants.stream()
+        .filter(p -> !p.getWarrior().equals(requester))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("Battle finalization error: Opponent warrior could not be found in participants list."));
 
         int myScore = me.getFinalScore();
         int opponentScore = opponent.getFinalScore();
