@@ -56,7 +56,8 @@ public class BattleCompletionService {
         
         currentParticipant.setFinalScore(request.getScore());
         battleParticipantRepository.save(currentParticipant); 
-        BattleRoom updatedBattleRoom = battleRoomRepository.findById(request.getBattleRoomId()).get();
+        BattleRoom updatedBattleRoom = battleRoomRepository.findById(request.getBattleRoomId())
+        .orElseThrow(() -> new IllegalStateException("Impossible state: BattleRoom with ID " + request.getBattleRoomId() + " disappeared mid-transaction."));
         boolean allScoresSubmitted = updatedBattleRoom.getParticipants().stream()
                 .allMatch(p -> p.getFinalScore() != null);
 
