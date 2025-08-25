@@ -56,23 +56,24 @@ public class BattleCompletionService {
 
         currentParticipant.setFinalScore(request.getScore());
         battleParticipantRepository.save(currentParticipant);
+
         BattleRoom updatedBattleRoom = battleRoomRepository.findById(request.getBattleRoomId())
                 .orElseThrow(() -> new IllegalStateException("Impossible state: BattleRoom with ID "
                         + request.getBattleRoomId() + " disappeared mid-transaction."));
+
         boolean allScoresSubmitted = updatedBattleRoom.getParticipants().stream()
                 .allMatch(p -> p.getFinalScore() != null);
 
         if (allScoresSubmitted) {
 
-            return finalizeBattle(updatedBattleRoom, requester);
+            return finalizeBattle(updatedBattleRoom, currentParticipant);
         } else {
-
             return Map.of("status", "pending", "message",
                     "Score submitted successfully. Waiting for other participant(s).");
         }
     }
 
-    private BattleResultResponseDto finalizeBattle(BattleRoom battleRoom, Warrior requester) {
+    private BattleResultResponseDto finalizeBattle(BattleRoom battleRoom, BattleParticipant me) {
         List<BattleParticipant> participants = battleRoom.getParticipants();
 
         if (participants.size() != battleRoom.getMaxParticipants()) {
@@ -81,14 +82,8 @@ public class BattleCompletionService {
                             battleRoom.getMaxParticipants(), participants.size()));
         }
 
-        BattleParticipant me = participants.stream()
-                .filter(p -> p.getWarrior().equals(requester))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Battle finalization error: Requesting warrior could not be found in participants list."));
-
         BattleParticipant opponent = participants.stream()
-                .filter(p -> !p.getWarrior().equals(requester))
+                .filter(p -> !p.equals(me))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "Battle finalization error: Opponent warrior could not be found in participants list."));
