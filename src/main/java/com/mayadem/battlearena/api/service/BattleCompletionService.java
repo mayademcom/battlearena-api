@@ -1,7 +1,6 @@
 package com.mayadem.battlearena.api.service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -56,16 +55,15 @@ public class BattleCompletionService {
 
         currentParticipant.setFinalScore(request.getScore());
         battleParticipantRepository.save(currentParticipant);
-
+        
         BattleRoom updatedBattleRoom = battleRoomRepository.findById(request.getBattleRoomId())
                 .orElseThrow(() -> new IllegalStateException("Impossible state: BattleRoom with ID "
                         + request.getBattleRoomId() + " disappeared mid-transaction."));
-
+        
         boolean allScoresSubmitted = updatedBattleRoom.getParticipants().stream()
                 .allMatch(p -> p.getFinalScore() != null);
 
         if (allScoresSubmitted) {
-
             return finalizeBattle(updatedBattleRoom, currentParticipant);
         } else {
             return Map.of("status", "pending", "message",
@@ -110,45 +108,26 @@ public class BattleCompletionService {
             opponentRankPointsChange = rankChange;
         }
 
-        Warrior myWarrior = me.getWarrior();
-        me.setRankPointsBefore(myWarrior.getRankPoints());
-        myWarrior.setRankPoints(Math.max(0, myWarrior.getRankPoints() + myRankPointsChange));
-        me.setRankPointsAfter(myWarrior.getRankPoints());
-        me.setRankPointsChange(myRankPointsChange);
-        myWarrior.updateStats(myResult, myScore);
+        updateParticipantStats(me, myResult, myScore, myRankPointsChange);
+        updateParticipantStats(opponent, opponentResult, opponentScore, opponentRankPointsChange);
 
-        Warrior opponentWarrior = opponent.getWarrior();
-        opponent.setRankPointsBefore(opponentWarrior.getRankPoints());
-        opponentWarrior.setRankPoints(Math.max(0, opponentWarrior.getRankPoints() + opponentRankPointsChange));
-        opponent.setRankPointsAfter(opponentWarrior.getRankPoints());
-        opponent.setRankPointsChange(opponentRankPointsChange);
-        opponentWarrior.updateStats(opponentResult, opponentScore);
-
-        warriorRepository.save(myWarrior);
-        warriorRepository.save(opponentWarrior);
+        warriorRepository.save(me.getWarrior());
+        warriorRepository.save(opponent.getWarrior());
 
         battleRoom.setStatus(BattleStatus.COMPLETED);
         battleRoom.setCompletedAt(Instant.now());
         battleRoomRepository.save(battleRoom);
 
-        BattleOpponentDto opponentDto = new BattleOpponentDto();
-        opponentDto.setUsername(opponentWarrior.getUsername());
-        opponentDto.setDisplayName(opponentWarrior.getDisplayName());
-        opponentDto.setScore(opponentScore);
-        opponentDto.setResult(opponentResult);
-        opponentDto.setRankPointsBefore(opponent.getRankPointsBefore());
-        opponentDto.setRankPointsAfter(opponent.getRankPointsAfter());
+        BattleOpponentDto opponentDto = BattleOpponentDto.from(opponent);
+        return BattleResultResponseDto.from(battleRoom, me, opponentDto, myRankPointsChange);
+    }
 
-        BattleResultResponseDto responseDto = new BattleResultResponseDto();
-        responseDto.setBattleRoomId(battleRoom.getId());
-        responseDto.setBattleType(battleRoom.getBattleType());
-        responseDto.setScore(myScore);
-        responseDto.setResult(myResult);
-        responseDto.setRankPointsChange(myRankPointsChange);
-        responseDto.setNewRankPoints(myWarrior.getRankPoints());
-        responseDto.setCompletedAt(LocalDateTime.now());
-        responseDto.setOpponent(opponentDto);
-
-        return responseDto;
+    private void updateParticipantStats(BattleParticipant participant, BattleResult result, int score, int rankPointsChange) {
+        Warrior warrior = participant.getWarrior();
+        participant.setRankPointsBefore(warrior.getRankPoints());
+        warrior.setRankPoints(Math.max(0, warrior.getRankPoints() + rankPointsChange));
+        participant.setRankPointsAfter(warrior.getRankPoints());
+        participant.setRankPointsChange(rankPointsChange);
+        warrior.updateStats(result, score);
     }
 }
