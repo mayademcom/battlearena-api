@@ -1,6 +1,9 @@
 package com.mayadem.battlearena.api.dto;
 
 import java.time.LocalDateTime;
+
+import com.mayadem.battlearena.api.entity.BattleParticipant;
+import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 
@@ -8,12 +11,25 @@ public class BattleResultResponseDto {
 
     private Long battleRoomId;
     private BattleType battleType;
-    private int finalScore;
+    private int score;
     private BattleResult result;
     private int rankPointsChange;
     private int newRankPoints;
     private LocalDateTime completedAt;
     private BattleOpponentDto opponent;
+
+    public static BattleResultResponseDto from(BattleRoom battleRoom, BattleParticipant me, BattleOpponentDto opponentDto, int myRankPointsChange) {
+        BattleResultResponseDto dto = new BattleResultResponseDto();
+        dto.setBattleRoomId(battleRoom.getId());
+        dto.setBattleType(battleRoom.getBattleType());
+        dto.setScore(me.getFinalScore());
+        dto.setResult(me.getResult());
+        dto.setRankPointsChange(myRankPointsChange);
+        dto.setNewRankPoints(me.getWarrior().getRankPoints());
+        dto.setCompletedAt(LocalDateTime.now());
+        dto.setOpponent(opponentDto);
+        return dto;
+    }
 
     public Long getBattleRoomId() {
         return battleRoomId;
@@ -31,12 +47,12 @@ public class BattleResultResponseDto {
         this.battleType = battleType;
     }
 
-    public int getFinalScore() {
-        return finalScore;
-    }
+    public int getScore() {
+        return score;
+    } 
 
-    public void setFinalScore(int finalScore) {
-        this.finalScore = finalScore;
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public BattleResult getResult() {
