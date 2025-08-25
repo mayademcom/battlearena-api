@@ -75,9 +75,12 @@ public class BattleCompletionService {
         List<BattleParticipant> participants = battleRoom.getParticipants();
         
 
-        if (participants.size() != 2) {
-            throw new IllegalStateException("Battle finalization is currently supported for 1v1 matches only.");
-        }
+        if (participants.size() != battleRoom.getMaxParticipants()) {
+        throw new IllegalStateException(
+            String.format("Battle finalization requires %d participants, but %d were found.",
+                battleRoom.getMaxParticipants(), participants.size())
+        );
+    }
 
         BattleParticipant me = participants.stream()
         .filter(p -> p.getWarrior().equals(requester))
