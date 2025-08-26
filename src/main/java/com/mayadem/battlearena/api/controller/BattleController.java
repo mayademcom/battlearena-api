@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort; 
 import java.util.Optional;
 import jakarta.validation.Valid;
+import com.mayadem.battlearena.api.dto.BattleHistoryDto;
 
 @RestController
 @RequestMapping("/api/battles")
@@ -129,5 +130,13 @@ public class BattleController {
         if (size > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("Page size must not be greater than " + MAX_PAGE_SIZE);
         }
+    }
+     @GetMapping("/history/{battleRoomId}")
+    public ResponseEntity<BattleHistoryDto> getBattleDetails(
+            @PathVariable Long battleRoomId,
+            @AuthenticationPrincipal Warrior warrior) {
+
+        BattleHistoryDto battleDetails = battleHistoryService.getBattleDetails(warrior, battleRoomId);
+        return ResponseEntity.ok(battleDetails);
     }
 }
