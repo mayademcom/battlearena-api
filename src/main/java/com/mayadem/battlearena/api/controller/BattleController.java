@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
@@ -20,7 +21,13 @@ import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.service.BattleCompletionService;
 import com.mayadem.battlearena.api.service.BattleRoomService;
-
+import com.mayadem.battlearena.api.dto.BattleHistoryPageDto; 
+import com.mayadem.battlearena.api.entity.enums.BattleType;
+import com.mayadem.battlearena.api.service.BattleHistoryService;
+import org.springframework.data.domain.PageRequest; 
+import org.springframework.data.domain.Pageable; 
+import org.springframework.data.domain.Sort; 
+import java.util.Optional;
 import jakarta.validation.Valid;
 
 @RestController
@@ -29,10 +36,13 @@ public class BattleController {
 
     private final BattleRoomService battleRoomService;
     private final BattleCompletionService battleCompletionService;
+    private final BattleHistoryService battleHistoryService;
+    private static final int MAX_PAGE_SIZE = 100;
 
-    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService) {
+    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService, BattleHistoryService battleHistoryService) {
         this.battleRoomService = battleRoomService;
         this.battleCompletionService = battleCompletionService;
+        this.battleHistoryService = battleHistoryService;
     }
 
     @PostMapping
@@ -88,5 +98,36 @@ public class BattleController {
         return battleRoomService.getBattleStatus(battleRoomId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
+    }
+    @GetMapping("/history")
+    public ResponseEntity<BattleHistoryPageDto> getBattleHistory(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) BattleType battleType,
+        @AuthenticationPrincipal Warrior warrior) { 
+
+    validatePageableParameters(page, size);
+
+    Pageable pageable = PageRequest.of(page, size);
+
+    BattleHistoryPageDto historyPage = battleHistoryService.getWarriorBattleHistory(
+        warrior,
+        Optional.ofNullable(battleType), 
+        pageable
+    );
+
+    return ResponseEntity.ok(historyPage);
+}
+
+    private void validatePageableParameters(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page index must not be less than zero!");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must be greater than zero!");
+        }
+        if (size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size must not be greater than " + MAX_PAGE_SIZE);
+        }
     }
 }
