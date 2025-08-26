@@ -19,6 +19,7 @@ import com.mayadem.battlearena.api.exception.BattleRoomNotJoinableException;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
 import com.mayadem.battlearena.api.repository.BattleRoomRepository;
+import java.util.Optional;
 
 @Service
 public class BattleRoomService {
@@ -99,6 +100,11 @@ public class BattleRoomService {
             availableRoomDtos.add(BattleRoomDto.fromEntity(room));
         }
         return availableRoomDtos;
+    }
+
+    public Optional<String> getBattleStatus(Long battleRoomId) {
+        return battleRoomRepository.findById(battleRoomId)
+                .map(battleRoom -> battleRoom.getStatus().name());
     }
 
     private void validateRoomIsJoinable(BattleRoom battleRoom, Warrior joiningWarrior) {

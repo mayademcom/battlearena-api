@@ -3,9 +3,12 @@ package com.mayadem.battlearena.api.entity;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.mayadem.battlearena.api.entity.enums.BattleResult;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +27,6 @@ public class Warrior implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
- 
     @Column(name = "username", unique = true, nullable = false, length = 50)
     private String username;
 
@@ -64,7 +66,6 @@ public class Warrior implements UserDetails {
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean isActive;
 
-
     @PrePersist
     protected void onCreate() {
         createdAt = new Timestamp(System.currentTimeMillis());
@@ -76,10 +77,9 @@ public class Warrior implements UserDetails {
         updatedAt = new Timestamp(System.currentTimeMillis());
     }
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-    
+
         return Collections.emptyList();
     }
 
@@ -90,54 +90,161 @@ public class Warrior implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username; 
+        return this.username;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return this.isActive; 
+        return this.isActive;
     }
 
-   
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public void setUsername(String username) { this.username = username; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public void setPassword(String password) { this.password = password; }
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
-    public int getTotalBattles() { return totalBattles; }
-    public void setTotalBattles(int totalBattles) { this.totalBattles = totalBattles; }
-    public int getVictories() { return victories; }
-    public void setVictories(int victories) { this.victories = victories; }
-    public int getDefeats() { return defeats; }
-    public void setDefeats(int defeats) { this.defeats = defeats; }
-    public int getBestScore() { return bestScore; }
-    public void setBestScore(int bestScore) { this.bestScore = bestScore; }
-    public int getRankPoints() { return rankPoints; }
-    public void setRankPoints(int rankPoints) { this.rankPoints = rankPoints; }
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
-    public Timestamp getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
-    public Timestamp getLastLogin() { return lastLogin; }
-    public void setLastLogin(Timestamp lastLogin) { this.lastLogin = lastLogin; }
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public int getTotalBattles() {
+        return totalBattles;
+    }
+
+    public void setTotalBattles(int totalBattles) {
+        this.totalBattles = totalBattles;
+    }
+
+    public int getVictories() {
+        return victories;
+    }
+
+    public void setVictories(int victories) {
+        this.victories = victories;
+    }
+
+    public int getDefeats() {
+        return defeats;
+    }
+
+    public void setDefeats(int defeats) {
+        this.defeats = defeats;
+    }
+
+    public int getBestScore() {
+        return bestScore;
+    }
+
+    public void setBestScore(int bestScore) {
+        this.bestScore = bestScore;
+    }
+
+    public int getRankPoints() {
+        return rankPoints;
+    }
+
+    public void setRankPoints(int rankPoints) {
+        this.rankPoints = rankPoints;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Timestamp getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public void updateStats(BattleResult result, int score) {
+        totalBattles++;
+
+        switch (result) {
+            case WIN -> victories++;
+            case LOSS -> defeats++;
+            case DRAW -> {
+            } // dilersen draw sayısını ayrı tutabilirsin
+            default -> {
+            }
+        }
+
+        if (score > bestScore) {
+            bestScore = score;
+        }
+    }
+
+    @Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Warrior warrior = (Warrior) o;
+    return Objects.equals(id, warrior.id);
+}
+
+@Override
+public int hashCode() {
+    return Objects.hash(id);
+}
+
 }

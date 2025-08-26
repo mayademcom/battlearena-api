@@ -34,6 +34,5 @@ public class SubmitBattleResultRequestDto {
     }
 
     public void setNotes(String notes) {
-        this.notes = notes;
-    }
+        this.notes =notes;}
 }

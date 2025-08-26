@@ -1,14 +1,26 @@
 package com.mayadem.battlearena.api.dto;
 
+import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.enums.BattleResult;
 
 public class BattleOpponentDto {
     private String username;
     private String displayName;
     private int score;
-    private BattleResult result; // e.g., "WIN" or "LOSS"
+    private BattleResult result; 
     private int rankPointsBefore;
     private int rankPointsAfter;
+
+    public static BattleOpponentDto from(BattleParticipant opponentParticipant) {
+        BattleOpponentDto dto = new BattleOpponentDto();
+        dto.setUsername(opponentParticipant.getWarrior().getUsername());
+        dto.setDisplayName(opponentParticipant.getWarrior().getDisplayName());
+        dto.setScore(opponentParticipant.getFinalScore());
+        dto.setResult(opponentParticipant.getResult());
+        dto.setRankPointsBefore(opponentParticipant.getRankPointsBefore());
+        dto.setRankPointsAfter(opponentParticipant.getRankPointsAfter());
+        return dto;
+    }
 
     public String getUsername() {
         return username;
