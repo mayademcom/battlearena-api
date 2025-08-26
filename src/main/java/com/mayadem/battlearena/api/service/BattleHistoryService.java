@@ -1,21 +1,19 @@
 package com.mayadem.battlearena.api.service;
 
-import com.mayadem.battlearena.api.dto.BattleHistoryPageDto;
-import com.mayadem.battlearena.api.dto.BattleHistorySummaryDto;
-import com.mayadem.battlearena.api.dto.BattleStatsDto;
-import com.mayadem.battlearena.api.entity.BattleParticipant;
-import com.mayadem.battlearena.api.entity.Warrior;
-import com.mayadem.battlearena.api.entity.enums.BattleType;
-import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import com.mayadem.battlearena.api.dto.BattleHistoryPageDto;
+import com.mayadem.battlearena.api.dto.BattleHistorySummaryDto;
+import com.mayadem.battlearena.api.entity.BattleParticipant;
+import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.entity.enums.BattleType;
+import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
 
 @Service
 public class BattleHistoryService {
