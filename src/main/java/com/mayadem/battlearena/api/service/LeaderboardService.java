@@ -5,6 +5,8 @@ import com.mayadem.battlearena.api.dto.LeaderboardEntryDto;
 import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.entity.ArenaLeaderboard;
 import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,7 +26,7 @@ public class LeaderboardService {
      * Top 100 oyuncuyu DTO olarak getir ve mevcut savaşçıyı vurgula
      */
     public List<LeaderboardEntryDto> getTop100(Long currentWarriorId) {
-        List<ArenaLeaderboard> top100 = leaderboardRepository.findTop100();
+        List<ArenaLeaderboard> top100 = leaderboardRepository.findTop100(PageRequest.of(0, 100));
         return top100.stream()
                 .map(entity -> toDto(entity, currentWarriorId))
                 .toList();
