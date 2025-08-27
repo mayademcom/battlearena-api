@@ -57,4 +57,8 @@ public class BattleHistoryService {
             .orElseThrow(() -> new ResourceNotFoundException("Battle details not found or you do not have permission to view it."));
         return BattleHistoryDto.from(participant);
     }
+    @Transactional(readOnly = true)
+    public BattleHistorySummaryDto getBattleHistorySummary(Warrior warrior) {
+        return createSummaryForWarrior(warrior);
+    }
 }

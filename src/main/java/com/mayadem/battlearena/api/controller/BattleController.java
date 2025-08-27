@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.mayadem.battlearena.api.dto.BattleHistorySummaryDto;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
@@ -138,5 +138,10 @@ public class BattleController {
 
         BattleHistoryDto battleDetails = battleHistoryService.getBattleDetails(warrior, battleRoomId);
         return ResponseEntity.ok(battleDetails);
+    }
+    @GetMapping("/history/stats")
+    public ResponseEntity<BattleHistorySummaryDto> getBattleStats(@AuthenticationPrincipal Warrior warrior) {
+        BattleHistorySummaryDto summary = battleHistoryService.getBattleHistorySummary(warrior);
+        return ResponseEntity.ok(summary);
     }
 }
