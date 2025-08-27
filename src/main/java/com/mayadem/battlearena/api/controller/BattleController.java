@@ -26,7 +26,6 @@ import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.service.BattleHistoryService;
 import org.springframework.data.domain.PageRequest; 
 import org.springframework.data.domain.Pageable; 
-import org.springframework.data.domain.Sort; 
 import java.util.Optional;
 import jakarta.validation.Valid;
 import com.mayadem.battlearena.api.dto.BattleHistoryDto;
