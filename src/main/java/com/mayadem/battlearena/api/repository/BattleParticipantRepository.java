@@ -70,6 +70,9 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
             SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.LOSS THEN 1 ELSE 0 END),
             SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.DRAW THEN 1 ELSE 0 END),
             (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0,
+            CASE WHEN COUNT(bp) > 0 THEN
+                (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0
+            ELSE 0.0 END,
             MAX(bp.finalScore),
             AVG(bp.finalScore),
             SUM(bp.rankPointsChange)
