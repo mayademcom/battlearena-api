@@ -17,6 +17,7 @@ import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.repository.projection.OpponentInfoProjection;
+import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
 
 @Repository
 public interface BattleParticipantRepository extends JpaRepository<BattleParticipant, Long> {
@@ -59,5 +60,53 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     List<BattleParticipant> findAllByWarriorAndBattleRoomStatus(Warrior warrior, com.mayadem.battlearena.api.entity.enums.BattleStatus status);
 
     Optional<BattleParticipant> findByWarriorAndBattleRoomId(Warrior warrior, Long battleRoomId);
+
+    @Query("""
+        SELECT new com.mayadem.battlearena.api.repository.projection.OverallStatsProjection(
+            COUNT(bp),
+            SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1 ELSE 0 END),
+            SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.LOSS THEN 1 ELSE 0 END),
+            SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.DRAW THEN 1 ELSE 0 END),
+            (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0,
+            MAX(bp.finalScore),
+            AVG(bp.finalScore),
+            SUM(bp.rankPointsChange)
+        )
+        FROM BattleParticipant bp
+        WHERE bp.warrior = :warrior AND bp.battleRoom.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED
+    """)
+    Optional<OverallStatsProjection> findOverallStatsByWarrior(@Param("warrior") Warrior warrior);
+
+    @Query(value = """
+        WITH ranked_battles AS (
+            SELECT 
+                result,
+                LAG(result, 1, result) OVER (ORDER BY br.completed_at) as prev_result,
+                ROW_NUMBER() OVER (ORDER BY br.completed_at) as rn
+            FROM battle_participants bp
+            JOIN battle_rooms br ON bp.battle_room_id = br.id
+            WHERE bp.warrior_id = :warriorId AND br.status = 'COMPLETED'
+        ),
+        streak_groups AS (
+            SELECT
+                result,
+                SUM(CASE WHEN result <> prev_result THEN 1 ELSE 0 END) OVER (ORDER BY rn) as streak_group
+            FROM ranked_battles
+        ),
+        streak_counts AS (
+            SELECT
+                result,
+                streak_group,
+                COUNT(*) as streak_length
+            FROM streak_groups
+            GROUP BY result, streak_group
+            ORDER BY streak_group DESC
+        )
+        SELECT 
+            (SELECT streak_length FROM streak_counts LIMIT 1) as current_streak,
+            (SELECT result FROM streak_counts LIMIT 1) as current_streak_type,
+            COALESCE((SELECT MAX(streak_length) FROM streak_counts WHERE result = 'WIN'), 0) as longest_win_streak
+    """, nativeQuery = true)
+    Object[] findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
 
 }
