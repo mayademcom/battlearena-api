@@ -19,6 +19,7 @@ import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.repository.projection.OpponentInfoProjection;
 import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
+import com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection;
 
 @Repository
 public interface BattleParticipantRepository extends JpaRepository<BattleParticipant, Long> {
@@ -128,5 +129,19 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
         GROUP BY br.battleType
     """)
     List<BattleTypeStatsDto> findStatsByBattleType(@Param("warrior") Warrior warrior);
+
+    @Query("""
+        SELECT new com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection(
+            COUNT(bp),
+            SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1 ELSE 0 END),
+            SUM(bp.rankPointsChange)
+        )
+        FROM BattleParticipant bp
+        JOIN bp.battleRoom br
+        WHERE bp.warrior = :warrior
+        AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED
+        AND br.completedAt >= :since
+    """)
+    Optional<RecentPerformanceProjection> findRecentStats(@Param("warrior") Warrior warrior, @Param("since") java.time.Instant since);
 
 }
