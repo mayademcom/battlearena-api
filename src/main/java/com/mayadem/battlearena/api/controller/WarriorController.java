@@ -16,6 +16,8 @@ import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
+import com.mayadem.battlearena.api.dto.OverallStatsDto;
+import com.mayadem.battlearena.api.dto.RecentPerformanceDto;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
 import com.mayadem.battlearena.api.dto.WarriorDetailedStatsDto;
 import com.mayadem.battlearena.api.dto.WarriorProfileDto;
@@ -83,6 +85,17 @@ public class WarriorController {
     public ResponseEntity<WarriorDetailedStatsDto> getMyStatistics(@AuthenticationPrincipal Warrior warrior) {
         WarriorDetailedStatsDto stats = statisticsService.getDetailedStatsForWarrior(warrior);
         return ResponseEntity.ok(stats);
+    }
+    @GetMapping("/statistics/summary")
+    public ResponseEntity<OverallStatsDto> getStatsSummary(@AuthenticationPrincipal Warrior warrior) {
+        OverallStatsDto summaryStats = statisticsService.getOverallStats(warrior);
+        return ResponseEntity.ok(summaryStats);
+    }
+
+    @GetMapping("/statistics/recent")
+    public ResponseEntity<RecentPerformanceDto> getRecentPerformance(@AuthenticationPrincipal Warrior warrior) {
+        RecentPerformanceDto recentStats = statisticsService.getRecentPerformance(warrior);
+        return ResponseEntity.ok(recentStats);
     }
 
 }

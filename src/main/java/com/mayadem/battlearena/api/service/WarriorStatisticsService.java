@@ -60,6 +60,15 @@ public class WarriorStatisticsService {
                 recentPerformance,
                 globalComparison);
     }
+    public OverallStatsDto getOverallStats(Warrior warrior) {
+        return buildOverallStats(warrior);
+    }
+
+    
+    public RecentPerformanceDto getRecentPerformance(Warrior warrior) {
+        OverallStatsDto overallStats = buildOverallStats(warrior);
+        return buildRecentPerformance(warrior, overallStats.winRate());
+    }
 
     private GlobalComparisonDto buildGlobalComparison() {
         LeaderboardStatsDto globalStats = arenaLeaderboardRepository.findGlobalStats();
