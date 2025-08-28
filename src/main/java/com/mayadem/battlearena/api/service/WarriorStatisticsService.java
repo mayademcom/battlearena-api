@@ -82,7 +82,7 @@ public class WarriorStatisticsService {
         StreakType streakType = StreakType.NONE;
         int longestWinStreak = 0;
 
-        if (streakInfo != null && streakInfo.length > 0 && streakInfo[0] != null) {
+        if (streakInfo != null && streakInfo.length > 0 && streakInfo[0] != null && streakInfo[1] != null) {
             currentStreak = ((Number) streakInfo[0]).intValue();
             streakType = StreakType.valueOf((String) streakInfo[1]);
             longestWinStreak = ((Number) streakInfo[2]).intValue();
