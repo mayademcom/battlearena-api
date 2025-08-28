@@ -1,32 +1,32 @@
 package com.mayadem.battlearena.api.dto;
 
 public class LeaderboardStatsDto {
-    private long totalActiveWarriors;
-    private double averageRankPoints;
-    private int highestRankPoints;
+    private Long totalActiveWarriors;
+    private Double averageRankPoints;
+    private Integer highestRankPoints;
     private String topWarriorUsername;
 
-    public long getTotalActiveWarriors() {
+    public Long getTotalActiveWarriors() {
         return totalActiveWarriors;
     }
 
-    public void setTotalActiveWarriors(long totalActiveWarriors) {
+    public void setTotalActiveWarriors(Long totalActiveWarriors) {
         this.totalActiveWarriors = totalActiveWarriors;
     }
 
-    public double getAverageRankPoints() {
+    public Double getAverageRankPoints() {
         return averageRankPoints;
     }
 
-    public void setAverageRankPoints(double averageRankPoints) {
+    public void setAverageRankPoints(Double averageRankPoints) {
         this.averageRankPoints = averageRankPoints;
     }
 
-    public int getHighestRankPoints() {
+    public Integer getHighestRankPoints() {
         return highestRankPoints;
     }
 
-    public void setHighestRankPoints(int highestRankPoints) {
+    public void setHighestRankPoints(Integer highestRankPoints) {
         this.highestRankPoints = highestRankPoints;
     }
 
@@ -38,9 +38,9 @@ public class LeaderboardStatsDto {
         this.topWarriorUsername = topWarriorUsername;
     }
 
-    public LeaderboardStatsDto(long totalActiveWarriors,
-            double averageRankPoints,
-            int highestRankPoints,
+    public LeaderboardStatsDto(Long totalActiveWarriors,
+            Double averageRankPoints,
+            Integer highestRankPoints,
             String topWarriorUsername) {
         this.totalActiveWarriors = totalActiveWarriors;
         this.averageRankPoints = averageRankPoints;
