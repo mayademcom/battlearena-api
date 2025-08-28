@@ -91,11 +91,28 @@ public class WarriorStatisticsService {
         StreakType streakType = StreakType.NONE;
         int longestWinStreak = 0;
 
-        if (streakInfo != null && streakInfo.length > 0 && streakInfo[0] != null && streakInfo[1] != null) {
-            currentStreak = ((Number) streakInfo[0]).intValue();
-            streakType = StreakType.valueOf((String) streakInfo[1]);
-            longestWinStreak = ((Number) streakInfo[2]).intValue();
+       
+        if (streakInfo != null && streakInfo.length > 0 && streakInfo[0] != null) {
+       
+            if (streakInfo[0] instanceof Number) {
+                currentStreak = ((Number) streakInfo[0]).intValue();
+            }
+
+            if (streakInfo.length > 1 && streakInfo[1] != null) {
+                String streakTypeValue = String.valueOf(streakInfo[1]);
+                try {
+                    streakType = StreakType.valueOf(streakTypeValue);
+                } catch (IllegalArgumentException e) {
+                    streakType = StreakType.NONE;
+                }
+            }
+
+     
+            if (streakInfo.length > 2 && streakInfo[2] instanceof Number) {
+                longestWinStreak = ((Number) streakInfo[2]).intValue();
+            }
         }
+         
 
         return new OverallStatsDto(
                 (int) stats.totalBattles(),
