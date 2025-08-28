@@ -70,7 +70,7 @@ public class WarriorStatisticsService {
         );
     }
 
-    @Transactional(readOnly = true)
+   
     private OverallStatsDto buildOverallStats(Warrior warrior) {
 
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
@@ -102,7 +102,7 @@ public class WarriorStatisticsService {
                 longestWinStreak);
     }
 
-    @Transactional(readOnly = true)
+    
     private RecentPerformanceDto buildRecentPerformance(Warrior warrior, double overallWinRate) {
 
         Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
