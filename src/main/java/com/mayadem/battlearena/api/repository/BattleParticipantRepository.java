@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.mayadem.battlearena.api.dto.BattleStatsDto;
+import com.mayadem.battlearena.api.dto.BattleTypeStatsDto;
 import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -108,5 +109,24 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
             COALESCE((SELECT MAX(streak_length) FROM streak_counts WHERE result = 'WIN'), 0) as longest_win_streak
     """, nativeQuery = true)
     Object[] findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
+
+    @Query("""
+        SELECT new com.mayadem.battlearena.api.dto.BattleTypeStatsDto(
+            br.battleType,
+            CAST(COUNT(bp) AS int),
+            CAST(SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1 ELSE 0 END) AS int),
+            CAST(SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.LOSS THEN 1 ELSE 0 END) AS int),
+            CAST(SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.DRAW THEN 1 ELSE 0 END) AS int),
+            (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0,
+            MAX(bp.finalScore),
+            AVG(bp.finalScore),
+            CAST(SUM(bp.rankPointsChange) AS int)
+        )
+        FROM BattleParticipant bp
+        JOIN bp.battleRoom br
+        WHERE bp.warrior = :warrior AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED
+        GROUP BY br.battleType
+    """)
+    List<BattleTypeStatsDto> findStatsByBattleType(@Param("warrior") Warrior warrior);
 
 }
