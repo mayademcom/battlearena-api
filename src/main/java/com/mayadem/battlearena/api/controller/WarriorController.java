@@ -12,16 +12,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto;
+import com.mayadem.battlearena.api.dto.ChangePasswordRequestDto; 
 import com.mayadem.battlearena.api.dto.ChangePasswordResponseDto;
 import com.mayadem.battlearena.api.dto.LoginRequest;
 import com.mayadem.battlearena.api.dto.LoginResponse;
 import com.mayadem.battlearena.api.dto.UpdateProfileRequestDto;
+import com.mayadem.battlearena.api.dto.WarriorDetailedStatsDto;
 import com.mayadem.battlearena.api.dto.WarriorProfileDto;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationRequest;
 import com.mayadem.battlearena.api.dto.WarriorRegistrationResponse;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.service.WarriorService;
+import com.mayadem.battlearena.api.service.WarriorStatisticsService;
 
 import jakarta.validation.Valid;
 
@@ -30,9 +32,10 @@ import jakarta.validation.Valid;
 public class WarriorController {
 
     private final WarriorService warriorService;
-
-    public WarriorController(WarriorService warriorService) {
+    private final WarriorStatisticsService statisticsService;
+    public WarriorController(WarriorService warriorService, WarriorStatisticsService statisticsService) {
         this.warriorService = warriorService;
+        this.statisticsService = statisticsService; 
     }
 
     @PostMapping("/register")
@@ -71,10 +74,15 @@ public class WarriorController {
             @AuthenticationPrincipal Warrior authenticatedWarrior) {
 
         ChangePasswordResponseDto response = warriorService.changePassword(
-                authenticatedWarrior.getId(), // Burada ID'yi alıyoruz
+                authenticatedWarrior.getId(), 
                 requestDto);
 
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/statistics")
+    public ResponseEntity<WarriorDetailedStatsDto> getMyStatistics(@AuthenticationPrincipal Warrior warrior) {
+        WarriorDetailedStatsDto stats = statisticsService.getDetailedStatsForWarrior(warrior);
+        return ResponseEntity.ok(stats);
     }
 
 }
