@@ -4,12 +4,16 @@ import com.mayadem.battlearena.api.dto.ArenaLeaderboardDto;
 import com.mayadem.battlearena.api.dto.LeaderboardEntryDto;
 import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.entity.ArenaLeaderboard;
+import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +63,8 @@ public class LeaderboardService {
     }
 
     /**
-     * Komple leaderboard DTO'sunu hazırla (top 100 + mevcut savaşçı pozisyonu + global stats + son güncelleme)
+     * Komple leaderboard DTO'sunu hazırla (top 100 + mevcut savaşçı pozisyonu +
+     * global stats + son güncelleme)
      */
     public ArenaLeaderboardDto getArenaLeaderboard(Long currentWarriorId) {
         ArenaLeaderboardDto dto = new ArenaLeaderboardDto();
@@ -91,4 +96,42 @@ public class LeaderboardService {
         dto.setCurrentWarrior(entity.getId().equals(currentWarriorId));
         return dto;
     }
+
+    @Transactional
+    public void updateFromWarrior(Warrior warrior) {
+        ArenaLeaderboard entry = leaderboardRepository.findById(warrior.getId())
+                .orElse(new ArenaLeaderboard());
+
+        entry.setId(warrior.getId());
+        entry.setUsername(warrior.getUsername());
+        entry.setDisplayName(warrior.getDisplayName());
+        entry.setRankPoints(warrior.getRankPoints());
+        entry.setTotalBattles(warrior.getTotalBattles());
+        entry.setVictories(warrior.getVictories());
+        entry.setDefeats(warrior.getDefeats());
+
+        double winRate = warrior.getTotalBattles() > 0
+                ? (double) warrior.getVictories() / warrior.getTotalBattles() * 100
+                : 0;
+        entry.setWinRate(winRate);
+
+        leaderboardRepository.save(entry);
+
+        recalcRanks();
+    }
+
+    @Transactional
+    public void recalcRanks() {
+        List<ArenaLeaderboard> all = leaderboardRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparingInt(ArenaLeaderboard::getRankPoints).reversed())
+                .toList();
+
+        int rank = 1;
+        for (ArenaLeaderboard a : all) {
+            a.setRankPosition(rank++);
+        }
+        leaderboardRepository.saveAll(all);
+    }
+
 }
