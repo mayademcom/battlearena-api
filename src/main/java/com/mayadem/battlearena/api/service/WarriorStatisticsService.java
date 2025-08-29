@@ -22,6 +22,7 @@ import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
 import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection;
+import com.mayadem.battlearena.api.repository.projection.StreakProjection;
 
 @Service
 public class WarriorStatisticsService {
@@ -60,17 +61,24 @@ public class WarriorStatisticsService {
                 recentPerformance,
                 globalComparison);
     }
+     @Transactional(readOnly = true)
+    public OverallStatsDto getOverallStats(Warrior warrior) {
+        return buildOverallStats(warrior);
+    }
+     @Transactional(readOnly = true)
+    public RecentPerformanceDto getRecentPerformance(Warrior warrior) {
+        OverallStatsDto overallStats = buildOverallStats(warrior);
+        return buildRecentPerformance(warrior, overallStats.winRate());
+    }
 
     private GlobalComparisonDto buildGlobalComparison() {
         LeaderboardStatsDto globalStats = arenaLeaderboardRepository.findGlobalStats();
         return new GlobalComparisonDto(
-            globalStats.getAverageRankPoints() != null ? globalStats.getAverageRankPoints() : 0.0,
-            0.0, 
-            globalStats.getTotalActiveWarriors() != null ? globalStats.getTotalActiveWarriors().intValue() : 0
-        );
+                globalStats.getAverageRankPoints() != null ? globalStats.getAverageRankPoints() : 0.0,
+                0.0,
+                globalStats.getTotalActiveWarriors() != null ? globalStats.getTotalActiveWarriors().intValue() : 0);
     }
 
-   
     private OverallStatsDto buildOverallStats(Warrior warrior) {
 
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
@@ -78,15 +86,7 @@ public class WarriorStatisticsService {
 
         Object[] streakInfo = battleParticipantRepository.findStreakInfoByWarrior(warrior.getId());
 
-        int currentStreak = 0;
-        StreakType streakType = StreakType.NONE;
-        int longestWinStreak = 0;
-
-        if (streakInfo != null && streakInfo.length > 0 && streakInfo[0] != null && streakInfo[1] != null) {
-            currentStreak = ((Number) streakInfo[0]).intValue();
-            streakType = StreakType.valueOf((String) streakInfo[1]);
-            longestWinStreak = ((Number) streakInfo[2]).intValue();
-        }
+        StreakProjection streakProjection = processStreakInfo(streakInfo);
 
         return new OverallStatsDto(
                 (int) stats.totalBattles(),
@@ -97,12 +97,40 @@ public class WarriorStatisticsService {
                 stats.bestScore() != null ? stats.bestScore() : 0,
                 stats.averageScore() != null ? stats.averageScore() : 0.0,
                 stats.totalRankPointsGained() != null ? stats.totalRankPointsGained().intValue() : 0,
-                currentStreak,
-                streakType,
-                longestWinStreak);
+                streakProjection.currentStreak(),
+                streakProjection.streakType(),
+                streakProjection.longestWinStreak());
     }
 
-    
+    private StreakProjection processStreakInfo(Object[] streakInfo) {
+        if (streakInfo == null || streakInfo.length == 0 || streakInfo[0] == null) {
+            return new StreakProjection(0, StreakType.NONE, 0);
+        }
+
+        int currentStreak = 0;
+        StreakType streakType = StreakType.NONE;
+        int longestWinStreak = 0;
+
+        if (streakInfo[0] instanceof Number number) {
+            currentStreak = number.intValue();
+        }
+
+        if (streakInfo.length > 1 && streakInfo[1] != null) {
+            String streakTypeValue = String.valueOf(streakInfo[1]);
+            try {
+                streakType = StreakType.valueOf(streakTypeValue);
+            } catch (IllegalArgumentException e) {
+                streakType = StreakType.NONE;
+            }
+        }
+
+        if (streakInfo.length > 2 && streakInfo[2] instanceof Number number) {
+            longestWinStreak = number.intValue();
+        }
+
+        return new StreakProjection(currentStreak, streakType, longestWinStreak);
+    }
+
     private RecentPerformanceDto buildRecentPerformance(Warrior warrior, double overallWinRate) {
 
         Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
