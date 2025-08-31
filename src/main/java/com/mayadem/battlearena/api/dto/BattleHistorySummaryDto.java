@@ -65,6 +65,20 @@ public class BattleHistorySummaryDto {
 
         return summary;
     }
+    public static BattleHistorySummaryDto from(BattleStatsDto statsDto) {
+    BattleHistorySummaryDto summary = new BattleHistorySummaryDto();
+
+    summary.totalBattles = statsDto.totalBattles();
+    summary.victories = statsDto.victories();
+    summary.defeats = statsDto.defeats();
+    summary.draws = statsDto.draws();
+    summary.winRate = statsDto.winRate();
+    summary.bestScore = statsDto.bestScore();
+    summary.averageScore = statsDto.averageScore();
+    summary.totalRankPointsGained = statsDto.totalRankPointsGained();
+
+    return summary;
+}
 
     public long getTotalBattles() {
         return totalBattles;

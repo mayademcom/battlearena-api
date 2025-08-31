@@ -65,6 +65,4 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
             """)
     BattleStatsDto findBattleStatsByWarrior(@Param("warrior") Warrior warrior);
 
-    List<BattleParticipant> findAllByWarriorAndBattleRoomStatus(Warrior warrior, com.mayadem.battlearena.api.entity.enums.BattleStatus status);
-
 }
