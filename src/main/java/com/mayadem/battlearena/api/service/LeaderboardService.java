@@ -6,6 +6,7 @@ import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.entity.ArenaLeaderboard;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
+import com.mayadem.battlearena.api.repository.WarriorRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -13,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +21,11 @@ import java.util.Optional;
 public class LeaderboardService {
 
     private final ArenaLeaderboardRepository leaderboardRepository;
+    private final WarriorRepository warriorRepository;
 
-    public LeaderboardService(ArenaLeaderboardRepository leaderboardRepository) {
+    public LeaderboardService(ArenaLeaderboardRepository leaderboardRepository, WarriorRepository warriorRepository) {
         this.leaderboardRepository = leaderboardRepository;
+        this.warriorRepository = warriorRepository;
     }
 
     /**
@@ -34,13 +36,6 @@ public class LeaderboardService {
         return top100.stream()
                 .map(entity -> toDto(entity, currentWarriorId))
                 .toList();
-    }
-
-    /**
-     * Global istatistikleri getir
-     */
-    public LeaderboardStatsDto getGlobalStats() {
-        return leaderboardRepository.findGlobalStats();
     }
 
     /**
@@ -97,41 +92,20 @@ public class LeaderboardService {
         return dto;
     }
 
-    @Transactional
-    public void updateFromWarrior(Warrior warrior) {
-        ArenaLeaderboard entry = leaderboardRepository.findById(warrior.getId())
-                .orElse(new ArenaLeaderboard());
+    public LeaderboardStatsDto getGlobalStats() {
+        ArenaLeaderboardRepository.LeaderboardStatsProjection stats = leaderboardRepository.findGlobalStatsProjection();
 
-        entry.setId(warrior.getId());
-        entry.setUsername(warrior.getUsername());
-        entry.setDisplayName(warrior.getDisplayName());
-        entry.setRankPoints(warrior.getRankPoints());
-        entry.setTotalBattles(warrior.getTotalBattles());
-        entry.setVictories(warrior.getVictories());
-        entry.setDefeats(warrior.getDefeats());
-
-        double winRate = warrior.getTotalBattles() > 0
-                ? (double) warrior.getVictories() / warrior.getTotalBattles() * 100
-                : 0;
-        entry.setWinRate(winRate);
-
-        leaderboardRepository.save(entry);
-
-        recalcRanks();
+        return new LeaderboardStatsDto(
+                stats.getTotalActiveWarriors(),
+                stats.getAverageRankPoints(),
+                stats.getHighestRankPoints(),
+                stats.getTopWarriorUsername());
     }
 
     @Transactional
-    public void recalcRanks() {
-        List<ArenaLeaderboard> all = leaderboardRepository.findAll()
-                .stream()
-                .sorted(Comparator.comparingInt(ArenaLeaderboard::getRankPoints).reversed())
-                .toList();
-
-        int rank = 1;
-        for (ArenaLeaderboard a : all) {
-            a.setRankPosition(rank++);
-        }
-        leaderboardRepository.saveAll(all);
+    public void updateFromWarrior(Warrior warrior) {
+        // Base table olan Warrior entity'sini kaydet
+        warriorRepository.save(warrior);
     }
 
 }
