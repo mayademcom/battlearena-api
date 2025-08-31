@@ -60,6 +60,7 @@ public class BattleHistoryService {
     }
     @Transactional(readOnly = true)
     public BattleHistorySummaryDto getBattleHistorySummary(Warrior warrior) {
-        return createSummaryForWarrior(warrior);
-    }
+    BattleStatsDto statsDto = battleParticipantRepository.findBattleStatsByWarrior(warrior);
+    return BattleHistorySummaryDto.from(statsDto);
+}
 }
