@@ -83,10 +83,10 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
 
     @Query(value = """
         WITH ranked_battles AS (
-            SELECT 
-                result,
-                LAG(result, 1, result) OVER (ORDER BY br.completed_at) as prev_result,
-                ROW_NUMBER() OVER (ORDER BY br.completed_at) as rn
+            SELECT
+                br.completed_at,
+                bp.result,
+                LAG(bp.result, 1) OVER (ORDER BY br.completed_at) as prev_result
             FROM battle_participants bp
             JOIN battle_rooms br ON bp.battle_room_id = br.id
             WHERE bp.warrior_id = :warriorId AND br.status = 'COMPLETED'
@@ -94,21 +94,22 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
         streak_groups AS (
             SELECT
                 result,
-                SUM(CASE WHEN result <> prev_result THEN 1 ELSE 0 END) OVER (ORDER BY rn) as streak_group
+                completed_at,
+                SUM(CASE WHEN result <> prev_result THEN 1 ELSE 0 END) OVER (ORDER BY completed_at) as streak_group
             FROM ranked_battles
         ),
         streak_counts AS (
             SELECT
                 result,
                 streak_group,
-                COUNT(*) as streak_length
+                COUNT(*) as streak_length,
+                MAX(completed_at) as last_battle_time
             FROM streak_groups
             GROUP BY result, streak_group
-            ORDER BY streak_group DESC
         )
-        SELECT 
-            (SELECT streak_length FROM streak_counts LIMIT 1) as current_streak,
-            (SELECT result FROM streak_counts LIMIT 1) as current_streak_type,
+        SELECT
+            (SELECT streak_length FROM streak_counts ORDER BY last_battle_time DESC LIMIT 1) as current_streak,
+            (SELECT result FROM streak_counts ORDER BY last_battle_time DESC LIMIT 1) as current_streak_type,
             COALESCE((SELECT MAX(streak_length) FROM streak_counts WHERE result = 'WIN'), 0) as longest_win_streak
     """, nativeQuery = true)
     Object[] findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
