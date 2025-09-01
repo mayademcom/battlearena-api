@@ -61,11 +61,13 @@ public class WarriorStatisticsService {
                 recentPerformance,
                 globalComparison);
     }
-     @Transactional(readOnly = true)
+
+    @Transactional(readOnly = true)
     public OverallStatsDto getOverallStats(Warrior warrior) {
         return buildOverallStats(warrior);
     }
-     @Transactional(readOnly = true)
+
+    @Transactional(readOnly = true)
     public RecentPerformanceDto getRecentPerformance(Warrior warrior) {
         OverallStatsDto overallStats = buildOverallStats(warrior);
         return buildRecentPerformance(warrior, overallStats.winRate());
@@ -84,9 +86,8 @@ public class WarriorStatisticsService {
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
                 .orElse(new OverallStatsProjection(0, 0, 0, 0, 0.0, 0, 0.0, 0L));
 
-        Object[] streakInfo = battleParticipantRepository.findStreakInfoByWarrior(warrior.getId());
-
-        StreakProjection streakProjection = processStreakInfo(streakInfo);
+        
+        StreakProjection streakProjection = calculateStreak(warrior);
 
         return new OverallStatsDto(
                 (int) stats.totalBattles(),
@@ -163,5 +164,43 @@ public class WarriorStatisticsService {
                 (int) rankPointsChange,
                 trend,
                 Collections.emptyMap());
+    }
+
+    private StreakProjection calculateStreak(Warrior warrior) {
+
+        List<com.mayadem.battlearena.api.entity.enums.BattleResult> results = battleParticipantRepository
+                .findBattleResultsForStreak(warrior);
+
+        if (results.isEmpty()) {
+            return new StreakProjection(0, StreakType.NONE, 0);
+        }
+
+        int currentStreak = 0;
+        int longestWinStreak = 0;
+        int currentWinStreak = 0;
+        StreakType currentStreakType = StreakType.NONE;
+
+        for (int i = 0; i < results.size(); i++) {
+            com.mayadem.battlearena.api.entity.enums.BattleResult result = results.get(i);
+
+            if (result == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN) {
+                currentWinStreak++;
+            } else {
+                longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
+                currentWinStreak = 0;
+            }
+
+            if (i > 0 && results.get(i) == results.get(i - 1)) {
+                currentStreak++;
+            } else {
+                currentStreak = 1;
+            }
+            currentStreakType = result == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN ? StreakType.WIN
+                    : StreakType.LOSS;
+        }
+
+        longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
+
+        return new StreakProjection(currentStreak, currentStreakType, longestWinStreak);
     }
 }

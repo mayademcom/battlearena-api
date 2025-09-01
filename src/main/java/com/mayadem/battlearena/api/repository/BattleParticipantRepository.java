@@ -147,4 +147,9 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     """)
     Optional<RecentPerformanceProjection> findRecentStats(@Param("warrior") Warrior warrior, @Param("since") java.time.Instant since);
 
+    @Query("SELECT bp.result FROM BattleParticipant bp JOIN bp.battleRoom br " +
+           "WHERE bp.warrior = :warrior AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED " +
+           "ORDER BY br.completedAt ASC")
+    List<com.mayadem.battlearena.api.entity.enums.BattleResult> findBattleResultsForStreak(@Param("warrior") Warrior warrior);
+
 }
