@@ -17,6 +17,7 @@ import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
+import com.mayadem.battlearena.api.repository.projection.DailyStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.OpponentInfoProjection;
 import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection;
@@ -151,5 +152,23 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
            "WHERE bp.warrior = :warrior AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED " +
            "ORDER BY br.completedAt ASC")
     List<com.mayadem.battlearena.api.entity.enums.BattleResult> findBattleResultsForStreak(@Param("warrior") Warrior warrior);
+
+    @Query(value = """
+        SELECT
+            CAST(br.completed_at AS DATE) as battleDate,
+            COUNT(*) as battleCount
+        FROM battle_participants bp
+        JOIN battle_rooms br ON bp.battle_room_id = br.id
+        WHERE
+            bp.warrior_id = :warriorId AND
+            br.status = 'COMPLETED' AND
+            br.completed_at >= :since
+        GROUP BY battleDate
+        ORDER BY battleDate ASC
+    """, nativeQuery = true)
+    List<DailyStatsProjection> findDailyBattleCounts(
+        @Param("warriorId") Long warriorId,
+        @Param("since") java.time.Instant since
+    );
 
 }

@@ -4,7 +4,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
-
+import java.util.stream.Collectors;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import com.mayadem.battlearena.api.entity.ArenaLeaderboard;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
+import com.mayadem.battlearena.api.repository.projection.DailyStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection;
 import com.mayadem.battlearena.api.repository.projection.StreakProjection;
@@ -86,7 +88,6 @@ public class WarriorStatisticsService {
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
                 .orElse(new OverallStatsProjection(0, 0, 0, 0, 0.0, 0, 0.0, 0L));
 
-        
         StreakProjection streakProjection = calculateStreak(warrior);
 
         return new OverallStatsDto(
@@ -109,6 +110,16 @@ public class WarriorStatisticsService {
 
         RecentPerformanceProjection recentStats = battleParticipantRepository.findRecentStats(warrior, since)
                 .orElse(new RecentPerformanceProjection(0, 0, 0L));
+
+        List<DailyStatsProjection> dailyCounts = battleParticipantRepository.findDailyBattleCounts(warrior.getId(),
+                since);
+
+        Map<String, Integer> dailyStatsMap = dailyCounts.stream()
+                .collect(Collectors.toMap(
+
+                        projection -> projection.getBattleDate().toString(),
+
+                        DailyStatsProjection::getBattleCount));
 
         long battles = recentStats.battles();
         long victories = recentStats.victories();
@@ -134,7 +145,7 @@ public class WarriorStatisticsService {
                 Math.round(winRateLast30Days * 100.0) / 100.0,
                 (int) rankPointsChange,
                 trend,
-                Collections.emptyMap());
+                dailyStatsMap);
     }
 
     private StreakProjection calculateStreak(Warrior warrior) {
@@ -151,25 +162,28 @@ public class WarriorStatisticsService {
         int currentWinStreak = 0;
         StreakType currentStreakType = StreakType.NONE;
 
-        for (int i = 0; i < results.size(); i++) {
-            com.mayadem.battlearena.api.entity.enums.BattleResult result = results.get(i);
+        if (!results.isEmpty()) {
+            com.mayadem.battlearena.api.entity.enums.BattleResult lastResult = results.get(results.size() - 1);
+            currentStreakType = lastResult == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN ? StreakType.WIN
+                    : StreakType.LOSS;
 
+            for (int i = results.size() - 1; i >= 0; i--) {
+                if (results.get(i) == lastResult) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        for (com.mayadem.battlearena.api.entity.enums.BattleResult result : results) {
             if (result == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN) {
                 currentWinStreak++;
             } else {
                 longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
                 currentWinStreak = 0;
             }
-
-            if (i > 0 && results.get(i) == results.get(i - 1)) {
-                currentStreak++;
-            } else {
-                currentStreak = 1;
-            }
-            currentStreakType = result == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN ? StreakType.WIN
-                    : StreakType.LOSS;
         }
-
         longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
 
         return new StreakProjection(currentStreak, currentStreakType, longestWinStreak);
