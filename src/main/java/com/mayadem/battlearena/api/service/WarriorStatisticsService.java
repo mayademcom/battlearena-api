@@ -103,35 +103,6 @@ public class WarriorStatisticsService {
                 streakProjection.longestWinStreak());
     }
 
-    private StreakProjection processStreakInfo(Object[] streakInfo) {
-        if (streakInfo == null || streakInfo.length == 0 || streakInfo[0] == null) {
-            return new StreakProjection(0, StreakType.NONE, 0);
-        }
-
-        int currentStreak = 0;
-        StreakType streakType = StreakType.NONE;
-        int longestWinStreak = 0;
-
-        if (streakInfo[0] instanceof Number number) {
-            currentStreak = number.intValue();
-        }
-
-        if (streakInfo.length > 1 && streakInfo[1] != null) {
-            String streakTypeValue = String.valueOf(streakInfo[1]);
-            try {
-                streakType = StreakType.valueOf(streakTypeValue);
-            } catch (IllegalArgumentException e) {
-                streakType = StreakType.NONE;
-            }
-        }
-
-        if (streakInfo.length > 2 && streakInfo[2] instanceof Number number) {
-            longestWinStreak = number.intValue();
-        }
-
-        return new StreakProjection(currentStreak, streakType, longestWinStreak);
-    }
-
     private RecentPerformanceDto buildRecentPerformance(Warrior warrior, double overallWinRate) {
 
         Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
