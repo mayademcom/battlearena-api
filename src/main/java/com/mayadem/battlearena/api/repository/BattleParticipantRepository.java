@@ -17,6 +17,7 @@ import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
+import com.mayadem.battlearena.api.repository.projection.DailyStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.OpponentInfoProjection;
 import com.mayadem.battlearena.api.repository.projection.OverallStatsProjection;
 import com.mayadem.battlearena.api.repository.projection.RecentPerformanceProjection;
@@ -69,7 +70,6 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
             SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1 ELSE 0 END),
             SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.LOSS THEN 1 ELSE 0 END),
             SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.DRAW THEN 1 ELSE 0 END),
-            (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0,
             CASE WHEN COUNT(bp) > 0 THEN
                 (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0
             ELSE 0.0 END,
@@ -84,10 +84,10 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
 
     @Query(value = """
         WITH ranked_battles AS (
-            SELECT 
-                result,
-                LAG(result, 1, result) OVER (ORDER BY br.completed_at) as prev_result,
-                ROW_NUMBER() OVER (ORDER BY br.completed_at) as rn
+            SELECT
+                br.completed_at,
+                bp.result,
+                LAG(bp.result, 1) OVER (ORDER BY br.completed_at) as prev_result
             FROM battle_participants bp
             JOIN battle_rooms br ON bp.battle_room_id = br.id
             WHERE bp.warrior_id = :warriorId AND br.status = 'COMPLETED'
@@ -95,24 +95,25 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
         streak_groups AS (
             SELECT
                 result,
-                SUM(CASE WHEN result <> prev_result THEN 1 ELSE 0 END) OVER (ORDER BY rn) as streak_group
+                completed_at,
+                SUM(CASE WHEN result <> prev_result THEN 1 ELSE 0 END) OVER (ORDER BY completed_at) as streak_group
             FROM ranked_battles
         ),
         streak_counts AS (
             SELECT
                 result,
                 streak_group,
-                COUNT(*) as streak_length
+                COUNT(*) as streak_length,
+                MAX(completed_at) as last_battle_time
             FROM streak_groups
             GROUP BY result, streak_group
-            ORDER BY streak_group DESC
         )
-        SELECT 
-            (SELECT streak_length FROM streak_counts LIMIT 1) as current_streak,
-            (SELECT result FROM streak_counts LIMIT 1) as current_streak_type,
+        SELECT
+            (SELECT streak_length FROM streak_counts ORDER BY last_battle_time DESC LIMIT 1) as current_streak,
+            (SELECT result FROM streak_counts ORDER BY last_battle_time DESC LIMIT 1) as current_streak_type,
             COALESCE((SELECT MAX(streak_length) FROM streak_counts WHERE result = 'WIN'), 0) as longest_win_streak
     """, nativeQuery = true)
-    Object[] findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
+    List<Object[]> findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
 
     @Query("""
         SELECT new com.mayadem.battlearena.api.dto.BattleTypeStatsDto(
@@ -146,5 +147,23 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
         AND br.completedAt >= :since
     """)
     Optional<RecentPerformanceProjection> findRecentStats(@Param("warrior") Warrior warrior, @Param("since") java.time.Instant since);
+
+    @Query(value = """
+        SELECT
+            CAST(br.completed_at AS DATE) as battleDate,
+            COUNT(*) as battleCount
+        FROM battle_participants bp
+        JOIN battle_rooms br ON bp.battle_room_id = br.id
+        WHERE
+            bp.warrior_id = :warriorId AND
+            br.status = 'COMPLETED' AND
+            br.completed_at >= :since
+        GROUP BY battleDate
+        ORDER BY battleDate ASC
+    """, nativeQuery = true)
+    List<DailyStatsProjection> findDailyBattleCounts(
+        @Param("warriorId") Long warriorId,
+        @Param("since") java.time.Instant since
+    );
 
 }
