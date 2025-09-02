@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.mayadem.battlearena.api.dto.BattleStatsDto;
+import java.util.Optional;
 import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.BattleRoom;
 import com.mayadem.battlearena.api.entity.Warrior;
@@ -47,24 +46,7 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     OpponentInfoProjection findOpponentInfo(@Param("warriorId") Long warriorId,
             @Param("battleRoomId") Long battleRoomId);
 
-    @Query("""
-                SELECT new com.mayadem.battlearena.api.dto.BattleStatsDto(
-                    COUNT(bp),
-                    SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.LOSS THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.DRAW THEN 1 ELSE 0 END),
-                    CASE WHEN COUNT(bp) > 0 THEN
-                        (SUM(CASE WHEN bp.result = com.mayadem.battlearena.api.entity.enums.BattleResult.WIN THEN 1.0 ELSE 0.0 END) / COUNT(bp)) * 100.0
-                    ELSE 0.0 END,
-                    COALESCE(MAX(bp.finalScore), 0),
-                    COALESCE(AVG(bp.finalScore), 0.0),
-                    COALESCE(CAST(SUM(bp.rankPointsChange) AS int), 0)
-                )
-                FROM BattleParticipant bp
-                JOIN bp.battleRoom br
-                WHERE bp.warrior = :warrior AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED
-            """)
-    BattleStatsDto findBattleStatsByWarrior(@Param("warrior") Warrior warrior);
+    Optional<BattleParticipant> findByWarriorAndBattleRoomId(Warrior warrior, Long battleRoomId);
 
 
     Optional<BattleParticipant> findByWarriorAndBattleRoomId(Warrior warrior, Long battleRoomId);
