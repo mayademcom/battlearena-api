@@ -49,6 +49,4 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     Optional<BattleParticipant> findByWarriorAndBattleRoomId(Warrior warrior, Long battleRoomId);
 
 
-    Optional<BattleParticipant> findByWarriorAndBattleRoomId(Warrior warrior, Long battleRoomId);
-
 }
