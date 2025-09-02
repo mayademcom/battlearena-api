@@ -2,7 +2,6 @@ package com.mayadem.battlearena.api.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
