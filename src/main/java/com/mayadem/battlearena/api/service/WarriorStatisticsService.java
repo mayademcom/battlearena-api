@@ -84,11 +84,33 @@ public class WarriorStatisticsService {
     }
 
     private OverallStatsDto buildOverallStats(Warrior warrior) {
-
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
                 .orElse(new OverallStatsProjection(0, 0, 0, 0, 0.0, 0, 0.0, 0L));
 
-        StreakProjection streakProjection = calculateStreak(warrior);
+        List<Object[]> streakResults = battleParticipantRepository.findStreakInfoByWarrior(warrior.getId());
+
+        StreakProjection streakProjection;
+        if (streakResults != null && !streakResults.isEmpty()) {
+            Object[] streakResult = streakResults.get(0);
+            if (streakResult != null && streakResult.length > 0 && streakResult[0] != null) {
+                int currentStreak = ((Number) streakResult[0]).intValue();
+                String streakTypeStr = (String) streakResult[1];
+                int longestWinStreak = ((Number) streakResult[2]).intValue();
+
+                StreakType streakType = StreakType.NONE;
+                if ("WIN".equalsIgnoreCase(streakTypeStr)) {
+                    streakType = StreakType.WIN;
+                } else if ("LOSS".equalsIgnoreCase(streakTypeStr)) {
+                    streakType = StreakType.LOSS;
+                }
+
+                streakProjection = new StreakProjection(currentStreak, streakType, longestWinStreak);
+            } else {
+                streakProjection = new StreakProjection(0, StreakType.NONE, 0);
+            }
+        } else {
+            streakProjection = new StreakProjection(0, StreakType.NONE, 0);
+        }
 
         return new OverallStatsDto(
                 (int) stats.totalBattles(),
@@ -146,46 +168,5 @@ public class WarriorStatisticsService {
                 (int) rankPointsChange,
                 trend,
                 dailyStatsMap);
-    }
-
-    private StreakProjection calculateStreak(Warrior warrior) {
-
-        List<com.mayadem.battlearena.api.entity.enums.BattleResult> results = battleParticipantRepository
-                .findBattleResultsForStreak(warrior);
-
-        if (results.isEmpty()) {
-            return new StreakProjection(0, StreakType.NONE, 0);
-        }
-
-        int currentStreak = 0;
-        int longestWinStreak = 0;
-        int currentWinStreak = 0;
-        StreakType currentStreakType = StreakType.NONE;
-
-        if (!results.isEmpty()) {
-            com.mayadem.battlearena.api.entity.enums.BattleResult lastResult = results.get(results.size() - 1);
-            currentStreakType = lastResult == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN ? StreakType.WIN
-                    : StreakType.LOSS;
-
-            for (int i = results.size() - 1; i >= 0; i--) {
-                if (results.get(i) == lastResult) {
-                    currentStreak++;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        for (com.mayadem.battlearena.api.entity.enums.BattleResult result : results) {
-            if (result == com.mayadem.battlearena.api.entity.enums.BattleResult.WIN) {
-                currentWinStreak++;
-            } else {
-                longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
-                currentWinStreak = 0;
-            }
-        }
-        longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
-
-        return new StreakProjection(currentStreak, currentStreakType, longestWinStreak);
     }
 }

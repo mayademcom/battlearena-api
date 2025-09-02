@@ -113,7 +113,7 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
             (SELECT result FROM streak_counts ORDER BY last_battle_time DESC LIMIT 1) as current_streak_type,
             COALESCE((SELECT MAX(streak_length) FROM streak_counts WHERE result = 'WIN'), 0) as longest_win_streak
     """, nativeQuery = true)
-    Object[] findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
+    List<Object[]> findStreakInfoByWarrior(@Param("warriorId") Long warriorId);
 
     @Query("""
         SELECT new com.mayadem.battlearena.api.dto.BattleTypeStatsDto(
@@ -147,11 +147,6 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
         AND br.completedAt >= :since
     """)
     Optional<RecentPerformanceProjection> findRecentStats(@Param("warrior") Warrior warrior, @Param("since") java.time.Instant since);
-
-    @Query("SELECT bp.result FROM BattleParticipant bp JOIN bp.battleRoom br " +
-           "WHERE bp.warrior = :warrior AND br.status = com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED " +
-           "ORDER BY br.completedAt ASC")
-    List<com.mayadem.battlearena.api.entity.enums.BattleResult> findBattleResultsForStreak(@Param("warrior") Warrior warrior);
 
     @Query(value = """
         SELECT
