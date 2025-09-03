@@ -1,7 +1,7 @@
 CREATE OR REPLACE VIEW arena_leaderboard AS
 SELECT 
     w.id,
-    ROW_NUMBER() OVER (ORDER BY w.rank_points DESC) AS rank_position,
+    RANK() OVER (ORDER BY w.rank_points DESC) AS rank_position,
     w.username,
     w.display_name,
     w.rank_points,
