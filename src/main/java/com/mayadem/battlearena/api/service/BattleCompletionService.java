@@ -27,15 +27,19 @@ public class BattleCompletionService {
     private final WarriorRepository warriorRepository;
     private final BattleRoomRepository battleRoomRepository;
     private final BattleParticipantRepository battleParticipantRepository;
+    private final LeaderboardService leaderboardService;
 
     public BattleCompletionService(ScoringService scoringService,
             WarriorRepository warriorRepository,
             BattleRoomRepository battleRoomRepository,
-            BattleParticipantRepository battleParticipantRepository) {
+            BattleParticipantRepository battleParticipantRepository,
+            LeaderboardService leaderboardService) {
         this.scoringService = scoringService;
         this.warriorRepository = warriorRepository;
         this.battleRoomRepository = battleRoomRepository;
         this.battleParticipantRepository = battleParticipantRepository;
+        this.leaderboardService = leaderboardService;
+
     }
 
     @Transactional
@@ -55,11 +59,11 @@ public class BattleCompletionService {
 
         currentParticipant.setFinalScore(request.getScore());
         battleParticipantRepository.save(currentParticipant);
-        
+
         BattleRoom updatedBattleRoom = battleRoomRepository.findById(request.getBattleRoomId())
                 .orElseThrow(() -> new IllegalStateException("Impossible state: BattleRoom with ID "
                         + request.getBattleRoomId() + " disappeared mid-transaction."));
-        
+
         boolean allScoresSubmitted = updatedBattleRoom.getParticipants().stream()
                 .allMatch(p -> p.getFinalScore() != null);
 
@@ -114,6 +118,9 @@ public class BattleCompletionService {
         warriorRepository.save(me.getWarrior());
         warriorRepository.save(opponent.getWarrior());
 
+        leaderboardService.updateFromWarrior(me.getWarrior());
+        leaderboardService.updateFromWarrior(opponent.getWarrior());
+
         battleRoom.setStatus(BattleStatus.COMPLETED);
         battleRoom.setCompletedAt(Instant.now());
         battleRoomRepository.save(battleRoom);
@@ -122,7 +129,8 @@ public class BattleCompletionService {
         return BattleResultResponseDto.from(battleRoom, me, opponentDto, myRankPointsChange);
     }
 
-    private void updateParticipantStats(BattleParticipant participant, BattleResult result, int score, int rankPointsChange) {
+    private void updateParticipantStats(BattleParticipant participant, BattleResult result, int score,
+            int rankPointsChange) {
         Warrior warrior = participant.getWarrior();
         participant.setRankPointsBefore(warrior.getRankPoints());
         warrior.setRankPoints(Math.max(0, warrior.getRankPoints() + rankPointsChange));
