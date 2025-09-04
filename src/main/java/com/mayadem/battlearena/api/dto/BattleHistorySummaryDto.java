@@ -1,12 +1,12 @@
 package com.mayadem.battlearena.api.dto;
 
-import com.mayadem.battlearena.api.entity.BattleParticipant;
-import com.mayadem.battlearena.api.entity.enums.BattleResult;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
+
+import com.mayadem.battlearena.api.entity.BattleParticipant;
+import com.mayadem.battlearena.api.entity.enums.BattleResult;
 
 public class BattleHistorySummaryDto {
 
@@ -54,7 +54,7 @@ public class BattleHistorySummaryDto {
                 .orElse(0);
 
         summary.averageScore = round(history.stream()
-                .mapToDouble(p -> p.getFinalScore() != null ? p.getFinalScore() : 0)
+                .mapToInt(p -> p.getFinalScore() != null ? p.getFinalScore() : 0)
                 .average()
                 .orElse(0.0));
 
