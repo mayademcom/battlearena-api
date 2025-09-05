@@ -1,21 +1,22 @@
 package com.mayadem.battlearena.api.service;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.mayadem.battlearena.api.dto.BattleHistoryDto;
+import java.util.Optional;
 import com.mayadem.battlearena.api.dto.BattleHistoryPageDto;
 import com.mayadem.battlearena.api.dto.BattleHistorySummaryDto;
 import com.mayadem.battlearena.api.entity.BattleParticipant;
 import com.mayadem.battlearena.api.entity.Warrior;
+import com.mayadem.battlearena.api.entity.enums.BattleStatus;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
-import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.repository.BattleParticipantRepository;
+
+import com.mayadem.battlearena.api.dto.BattleHistoryDto;
+
+import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
+import java.util.List;
 
 @Service
 public class BattleHistoryService {
@@ -26,39 +27,37 @@ public class BattleHistoryService {
         this.battleParticipantRepository = battleParticipantRepository;
     }
 
-    @Transactional(readOnly = true) 
-    public BattleHistoryPageDto getWarriorBattleHistory(Warrior warrior, Optional<BattleType> battleType, Pageable pageable) {
-  
+    @Transactional(readOnly = true)
+    public BattleHistoryPageDto getWarriorBattleHistory(Warrior warrior, Optional<BattleType> battleType,
+            Pageable pageable) {
+
         Page<BattleParticipant> participantPage;
         if (battleType.isPresent()) {
-            participantPage = battleParticipantRepository.findBattleHistoryByWarriorAndType(warrior, battleType.get(), pageable);
+            participantPage = battleParticipantRepository.findBattleHistoryByWarriorAndType(warrior, battleType.get(),
+                    pageable);
         } else {
             participantPage = battleParticipantRepository.findBattleHistoryByWarrior(warrior, pageable);
         }
 
-        BattleHistorySummaryDto summaryDto = createSummaryForWarrior(warrior);
+        BattleHistorySummaryDto summaryDto = BattleHistorySummaryDto.from(participantPage.getContent());
 
         return BattleHistoryPageDto.from(participantPage, summaryDto);
     }
 
-    private BattleHistorySummaryDto createSummaryForWarrior(Warrior warrior) {
-        List<BattleParticipant> allCompletedBattles = battleParticipantRepository.findAllByWarriorAndBattleRoomStatus(
-            warrior, 
-            com.mayadem.battlearena.api.entity.enums.BattleStatus.COMPLETED
-        );
-
-        return BattleHistorySummaryDto.from(allCompletedBattles);
-    }
     @Transactional(readOnly = true)
     public BattleHistoryDto getBattleDetails(Warrior warrior, Long battleRoomId) {
         BattleParticipant participant = battleParticipantRepository
-            .findByWarriorAndBattleRoomId(warrior, battleRoomId)
-
-            .orElseThrow(() -> new ResourceNotFoundException("Battle details not found or you do not have permission to view it."));
+                .findByWarriorAndBattleRoomId(warrior, battleRoomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Battle details not found."));
         return BattleHistoryDto.from(participant);
     }
+
     @Transactional(readOnly = true)
     public BattleHistorySummaryDto getBattleHistorySummary(Warrior warrior) {
-        return createSummaryForWarrior(warrior);
+        List<BattleParticipant> allCompletedBattles = battleParticipantRepository
+                .findByWarriorAndBattleRoomStatus(warrior, BattleStatus.COMPLETED);
+
+        return BattleHistorySummaryDto.from(allCompletedBattles);
     }
+
 }
