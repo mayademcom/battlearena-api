@@ -1,4 +1,5 @@
 package com.mayadem.battlearena.api.controller;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -15,19 +16,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.mayadem.battlearena.api.dto.BattleHistorySummaryDto;
 import com.mayadem.battlearena.api.dto.BattleRoomDto;
+import com.mayadem.battlearena.api.dto.LeaderboardEntryDto;
+import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.dto.StartBattleRequestDto;
 import com.mayadem.battlearena.api.dto.SubmitBattleResultRequestDto;
 import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.exception.ResourceNotFoundException;
 import com.mayadem.battlearena.api.service.BattleCompletionService;
 import com.mayadem.battlearena.api.service.BattleRoomService;
-import com.mayadem.battlearena.api.dto.BattleHistoryPageDto; 
+import com.mayadem.battlearena.api.service.LeaderboardService;
+import com.mayadem.battlearena.api.dto.BattleHistoryPageDto;
 import com.mayadem.battlearena.api.entity.enums.BattleType;
 import com.mayadem.battlearena.api.service.BattleHistoryService;
-import org.springframework.data.domain.PageRequest; 
-import org.springframework.data.domain.Pageable; 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 import jakarta.validation.Valid;
+
+import com.mayadem.battlearena.api.dto.ArenaLeaderboardDto;
 import com.mayadem.battlearena.api.dto.BattleHistoryDto;
 
 @RestController
@@ -37,12 +43,15 @@ public class BattleController {
     private final BattleRoomService battleRoomService;
     private final BattleCompletionService battleCompletionService;
     private final BattleHistoryService battleHistoryService;
+    private final LeaderboardService leaderboardService;
     private static final int MAX_PAGE_SIZE = 100;
 
-    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService, BattleHistoryService battleHistoryService) {
+    public BattleController(BattleRoomService battleRoomService, BattleCompletionService battleCompletionService,
+            BattleHistoryService battleHistoryService, LeaderboardService leaderboardService) {
         this.battleRoomService = battleRoomService;
         this.battleCompletionService = battleCompletionService;
         this.battleHistoryService = battleHistoryService;
+        this.leaderboardService = leaderboardService;
     }
 
     @PostMapping
@@ -77,7 +86,7 @@ public class BattleController {
 
     @PostMapping("/submit-result")
     public ResponseEntity<Object> submitBattleResult(@Valid @RequestBody SubmitBattleResultRequestDto request,
-                                                     @AuthenticationPrincipal Warrior requester){
+            @AuthenticationPrincipal Warrior requester) {
         try {
             Object result = battleCompletionService.submitAndProcessScore(request, requester);
 
@@ -99,25 +108,25 @@ public class BattleController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().body("BattleRoom not found."));
     }
+
     @GetMapping("/history")
     public ResponseEntity<BattleHistoryPageDto> getBattleHistory(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) BattleType battleType,
-        @AuthenticationPrincipal Warrior warrior) { 
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) BattleType battleType,
+            @AuthenticationPrincipal Warrior warrior) {
 
-    validatePageableParameters(page, size);
+        validatePageableParameters(page, size);
 
-    Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
 
-    BattleHistoryPageDto historyPage = battleHistoryService.getWarriorBattleHistory(
-        warrior,
-        Optional.ofNullable(battleType), 
-        pageable
-    );
+        BattleHistoryPageDto historyPage = battleHistoryService.getWarriorBattleHistory(
+                warrior,
+                Optional.ofNullable(battleType),
+                pageable);
 
-    return ResponseEntity.ok(historyPage);
-}
+        return ResponseEntity.ok(historyPage);
+    }
 
     private void validatePageableParameters(int page, int size) {
         if (page < 0) {
@@ -130,7 +139,8 @@ public class BattleController {
             throw new IllegalArgumentException("Page size must not be greater than " + MAX_PAGE_SIZE);
         }
     }
-     @GetMapping("/history/{battleRoomId}")
+
+    @GetMapping("/history/{battleRoomId}")
     public ResponseEntity<BattleHistoryDto> getBattleDetails(
             @PathVariable Long battleRoomId,
             @AuthenticationPrincipal Warrior warrior) {
@@ -138,9 +148,32 @@ public class BattleController {
         BattleHistoryDto battleDetails = battleHistoryService.getBattleDetails(warrior, battleRoomId);
         return ResponseEntity.ok(battleDetails);
     }
+
     @GetMapping("/history/stats")
     public ResponseEntity<BattleHistorySummaryDto> getBattleStats(@AuthenticationPrincipal Warrior warrior) {
         BattleHistorySummaryDto summary = battleHistoryService.getBattleHistorySummary(warrior);
         return ResponseEntity.ok(summary);
+    }
+
+    // Ana leaderboard
+    @GetMapping("/leaderboard")
+    public ResponseEntity<ArenaLeaderboardDto> getArenaLeaderboard(@AuthenticationPrincipal Warrior currentWarrior) {
+        ArenaLeaderboardDto dto = leaderboardService.getArenaLeaderboard(currentWarrior.getId());
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/leaderboard/around-me")
+    public ResponseEntity<List<LeaderboardEntryDto>> getLeaderboardAroundMe(
+            @RequestParam(defaultValue = "5") int range,
+            @AuthenticationPrincipal Warrior currentWarrior) {
+        List<LeaderboardEntryDto> around = leaderboardService.getWarriorsAroundMe(currentWarrior.getId(), range);
+        return ResponseEntity.ok(around);
+    }
+
+    // Global stats
+    @GetMapping("/leaderboard/stats")
+    public ResponseEntity<LeaderboardStatsDto> getLeaderboardStats() {
+        LeaderboardStatsDto stats = leaderboardService.getGlobalStats();
+        return ResponseEntity.ok(stats);
     }
 }
