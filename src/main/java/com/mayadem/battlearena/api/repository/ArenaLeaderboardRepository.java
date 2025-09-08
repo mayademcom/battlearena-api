@@ -21,9 +21,9 @@ public interface ArenaLeaderboardRepository extends JpaRepository<ArenaLeaderboa
                 String getTopWarriorUsername();
         }
 
-        // En iyi 100 oyuncu (JPQL'de LIMIT yok → Pageable kullanılmalı)
-        @Query("SELECT a FROM ArenaLeaderboard a ORDER BY a.rankPoints DESC")
-        List<ArenaLeaderboard> findTop100(Pageable pageable);
+    // En iyi 100 oyuncu (JPQL'de LIMIT yok → Pageable kullanılmalı)
+    @Query("SELECT a FROM ArenaLeaderboard a ORDER BY a.rankPoints DESC")
+    List<ArenaLeaderboard> findTopPlayers(Pageable pageable);
 
         // Belirli oyuncunun pozisyonu
         @Query("SELECT a FROM ArenaLeaderboard a WHERE a.id = :warriorId")
