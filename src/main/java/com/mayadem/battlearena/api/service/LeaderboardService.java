@@ -26,8 +26,8 @@ public class LeaderboardService {
      * Top 100 oyuncuyu DTO olarak getir ve mevcut savaşçıyı vurgula
      */
     public List<LeaderboardEntryDto> getTop100(Long currentWarriorId) {
-        List<ArenaLeaderboard> Players = leaderboardRepository.findTopPlayers(PageRequest.of(0, 100));
-        return Players.stream()
+        List<ArenaLeaderboard> players = leaderboardRepository.findTopPlayers(PageRequest.of(0, 100));
+        return players.stream()
                 .map(entity -> toDto(entity, currentWarriorId))
                 .toList();
     }
