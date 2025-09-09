@@ -3,14 +3,14 @@ package com.mayadem.battlearena.api.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mayadem.battlearena.api.dto.BattleTypeStatsDto;
 import com.mayadem.battlearena.api.dto.GlobalComparisonDto;
-import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.dto.OverallStatsDto;
 import com.mayadem.battlearena.api.dto.RecentPerformanceDto;
 import com.mayadem.battlearena.api.dto.WarriorDetailedStatsDto;
@@ -75,12 +75,13 @@ public class WarriorStatisticsService {
     }
 
     private GlobalComparisonDto buildGlobalComparison() {
-        LeaderboardStatsDto globalStats = arenaLeaderboardRepository.findGlobalStats();
-        return new GlobalComparisonDto(
-                globalStats.getAverageRankPoints() != null ? globalStats.getAverageRankPoints() : 0.0,
-                0.0,
-                globalStats.getTotalActiveWarriors() != null ? globalStats.getTotalActiveWarriors().intValue() : 0);
-    }
+    ArenaLeaderboardRepository.LeaderboardStatsProjection projection = arenaLeaderboardRepository.findGlobalStatsProjection();
+    return new GlobalComparisonDto(
+            projection.getAverageRankPoints() != null ? projection.getAverageRankPoints() : 0.0,
+            0.0,
+            projection.getTotalActiveWarriors() != null ? projection.getTotalActiveWarriors().intValue() : 0
+    );
+}
 
     private OverallStatsDto buildOverallStats(Warrior warrior) {
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
