@@ -4,7 +4,11 @@ import com.mayadem.battlearena.api.dto.ArenaLeaderboardDto;
 import com.mayadem.battlearena.api.dto.LeaderboardEntryDto;
 import com.mayadem.battlearena.api.dto.LeaderboardStatsDto;
 import com.mayadem.battlearena.api.entity.ArenaLeaderboard;
+import com.mayadem.battlearena.api.entity.Warrior;
 import com.mayadem.battlearena.api.repository.ArenaLeaderboardRepository;
+import com.mayadem.battlearena.api.repository.WarriorRepository;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,26 +21,21 @@ import java.util.Optional;
 public class LeaderboardService {
 
     private final ArenaLeaderboardRepository leaderboardRepository;
+    private final WarriorRepository warriorRepository;
 
-    public LeaderboardService(ArenaLeaderboardRepository leaderboardRepository) {
+    public LeaderboardService(ArenaLeaderboardRepository leaderboardRepository, WarriorRepository warriorRepository) {
         this.leaderboardRepository = leaderboardRepository;
+        this.warriorRepository = warriorRepository;
     }
 
     /**
      * Top 100 oyuncuyu DTO olarak getir ve mevcut savaşçıyı vurgula
      */
     public List<LeaderboardEntryDto> getTop100(Long currentWarriorId) {
-        List<ArenaLeaderboard> top100 = leaderboardRepository.findTop100(PageRequest.of(0, 100));
-        return top100.stream()
+        List<ArenaLeaderboard> players = leaderboardRepository.findTopPlayers(PageRequest.of(0, 100));
+        return players.stream()
                 .map(entity -> toDto(entity, currentWarriorId))
                 .toList();
-    }
-
-    /**
-     * Global istatistikleri getir
-     */
-    public LeaderboardStatsDto getGlobalStats() {
-        return leaderboardRepository.findGlobalStats();
     }
 
     /**
@@ -59,7 +58,8 @@ public class LeaderboardService {
     }
 
     /**
-     * Komple leaderboard DTO'sunu hazırla (top 100 + mevcut savaşçı pozisyonu + global stats + son güncelleme)
+     * Komple leaderboard DTO'sunu hazırla (top 100 + mevcut savaşçı pozisyonu +
+     * global stats + son güncelleme)
      */
     public ArenaLeaderboardDto getArenaLeaderboard(Long currentWarriorId) {
         ArenaLeaderboardDto dto = new ArenaLeaderboardDto();
@@ -91,4 +91,21 @@ public class LeaderboardService {
         dto.setCurrentWarrior(entity.getId().equals(currentWarriorId));
         return dto;
     }
+
+    public LeaderboardStatsDto getGlobalStats() {
+        ArenaLeaderboardRepository.LeaderboardStatsProjection stats = leaderboardRepository.findGlobalStatsProjection();
+
+        return new LeaderboardStatsDto(
+                stats.getTotalActiveWarriors(),
+                stats.getAverageRankPoints(),
+                stats.getHighestRankPoints(),
+                stats.getTopWarriorUsername());
+    }
+
+    @Transactional
+    public void updateFromWarrior(Warrior warrior) {
+        // Base table olan Warrior entity'sini kaydet
+        warriorRepository.save(warrior);
+    }
+
 }
