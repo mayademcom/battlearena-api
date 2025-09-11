@@ -75,13 +75,14 @@ public class WarriorStatisticsService {
     }
 
     private GlobalComparisonDto buildGlobalComparison() {
-    ArenaLeaderboardRepository.LeaderboardStatsProjection projection = arenaLeaderboardRepository.findGlobalStatsProjection();
-    return new GlobalComparisonDto(
-            projection.getAverageRankPoints() != null ? projection.getAverageRankPoints() : 0.0,
-            0.0,
-            projection.getTotalActiveWarriors() != null ? projection.getTotalActiveWarriors().intValue() : 0
-    );
-}
+        ArenaLeaderboardRepository.LeaderboardStatsProjection projection = arenaLeaderboardRepository
+                .findGlobalStatsProjection();
+
+        return new GlobalComparisonDto(
+                projection.getAverageWinRate() != null ? projection.getAverageWinRate() : 0.0,
+                projection.getAverageScore() != null ? projection.getAverageScore() : 0.0,
+                projection.getTotalActiveWarriors() != null ? projection.getTotalActiveWarriors().intValue() : 0);
+    }
 
     private OverallStatsDto buildOverallStats(Warrior warrior) {
         OverallStatsProjection stats = battleParticipantRepository.findOverallStatsByWarrior(warrior)
