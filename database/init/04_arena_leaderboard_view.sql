@@ -8,6 +8,7 @@ SELECT
     w.total_battles,
     w.victories,
     w.defeats,
+    w.best_score,
     CASE 
         WHEN w.total_battles > 0 THEN (w.victories::decimal / w.total_battles) * 100
         ELSE 0
