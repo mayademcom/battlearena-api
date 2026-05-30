@@ -6,4 +6,5 @@ import java.time.LocalDate;
 public interface DailyStatsProjection {
     LocalDate getBattleDate();
     Integer getBattleCount();
+
 }
